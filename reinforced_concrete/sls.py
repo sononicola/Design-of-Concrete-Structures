@@ -1,18 +1,6 @@
 import numpy as np
-import pandas as pd
-d = 360
-d1=40
-d2=40
-b=450
-As = 2513
-As1 = 1257
-sigma_cR = 18
-sigma_sR = 360
-sigma_sR1 = 360
-n = 15
-M = 270000000 # Nmm
 
-
+"RETTANGOLO"
 
 
 """
@@ -66,22 +54,3 @@ def sls_M(M, As, As1, d, d2, b, sigma_cR, sigma_sR, sigma_sR1, n=15) -> dict:
 
     return dic
 
-single = sls_M(M, As, As1, d, d2, b, sigma_cR, sigma_sR, sigma_sR1, n=15)
-print(single)
-
-
-M_list = np.array([M,2*M])
-As_list = np.array([As,As])
-As1_list = np.array([As1, As1])
-#d_list = np.array([d, d])
-#d1_list = np.array([d1, d1])
-#d2_list = np.array([d2, d2])
-#b_list = np.array([b, b])
-
-dict_sls_M = sls_M(M_list, As_list, As1_list, d, d2, b, sigma_cR, sigma_sR, sigma_sR1, n=15)
-# mettere i nomi tipo A1, C1, A2 ecc:
-row_names = range(1,len(dict_sls_M["x"])+1)
-
-tab = pd.DataFrame(dict_sls_M, index=row_names)
-
-print(tab)

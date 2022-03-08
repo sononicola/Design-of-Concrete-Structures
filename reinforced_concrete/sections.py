@@ -76,8 +76,8 @@ class Geometry:
 
 #TODO __print__ per includere il post init
 
-def a(bars, diameter):
-    bars * 3.14 * diameter**2 / 4
+def a(bars: int , diameter: int):
+    return bars * 3.14 * diameter**2 / 4
 
 c = create_concrete_material("EC2","C30/37")
 s = create_steel_material("NTC18","B450C")

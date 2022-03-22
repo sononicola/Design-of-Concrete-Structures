@@ -13,17 +13,21 @@ cls = create_concrete_material("EC2","C30/37")
 steel = create_steel_material("NTC18","B450C")
 As = Bars(n_bars=6, diameter=20, steel_material=steel)
 As1 = Bars(n_bars=3, diameter=12, steel_material=steel)
-
 section_1 = ReinforcedConcreteSection(b=300, d=410, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, name="sec1")
-print(cls)
-print(steel)
-print(As)
+
+print(cls.__repr__())
+print(steel.__repr__())
+print(As.__str__())
+print(As.__repr__())
 print(As.area())
-print(section_1)
+print(section_1.__repr__())
+
+custom_cls = ConcreteMaterial(bla bla bla)
 """
 
 @dataclass()
 class ConcreteMaterial:
+    name : str
     fck : float
     rck : float 
     fcm : float
@@ -57,7 +61,7 @@ def create_concrete_material(code_name: str, concrete_type:str) -> ConcreteMater
 
 @dataclass()
 class SteelMaterial:
-    #name: str #TODO AGGIUNGERLO AL DATABASE
+    name: str 
     fyk : float
     Es : float
     esu: float
@@ -68,7 +72,7 @@ class SteelMaterial:
         self.ese = self.fyd/self.Es
     
     
-def create_steel_material(code_name: str, steel_type:str) -> ConcreteMaterial:
+def create_steel_material(code_name: str, steel_type:str) -> SteelMaterial:
     """
     Create a SteelMaterial object using the database values as input
     code_name: "NTC18" or "EC2" 
@@ -83,7 +87,7 @@ def create_steel_material(code_name: str, steel_type:str) -> ConcreteMaterial:
 class Bars:
     n_bars: int
     diameter: int
-    steel_material: SteelMaterial
+    steel_material: SteelMaterial = create_steel_material("NTC18","B450C")
 
     def area(self):
         "Area"
@@ -106,7 +110,3 @@ class ReinforcedConcreteSection:
 
     def __post_init__(self):
         self.h = self.d + self.d1
-
-
-
-

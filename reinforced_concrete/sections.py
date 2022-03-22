@@ -6,6 +6,21 @@ GAMMA_C = 1.5
 ALPHA_CC = 0.85
 GAMMA_S = 1.15 
 
+"""
+EXAMPLE OF HOW TO USE IT
+
+cls = create_concrete_material("EC2","C30/37")
+steel = create_steel_material("NTC18","B450C")
+As = Bars(n_bars=6, diameter=20, steel_material=steel)
+As1 = Bars(n_bars=3, diameter=12, steel_material=steel)
+
+section_1 = ReinforcedConcreteSection(b=300, d=410, d1=40, d2=40, concrete=cls, As=As, As1=As1, name="sec1")
+print(cls)
+print(steel)
+print(As)
+print(As.area())
+print(section_1)
+"""
 
 @dataclass()
 class ConcreteMaterial:
@@ -34,7 +49,7 @@ def create_concrete_material(code_name: str, concrete_type:str) -> ConcreteMater
     code_name: "NTC18" or "EC2" 
     concrete_type: example: "C15/20"
     """
-    with open("reinforced concrete section/concrete_database.json") as file:
+    with open("reinforced_concrete/concrete_database.json") as file:
         data = json.load(file)[code_name][concrete_type]
         return ConcreteMaterial(**data) 
 
@@ -42,8 +57,10 @@ def create_concrete_material(code_name: str, concrete_type:str) -> ConcreteMater
 
 @dataclass()
 class SteelMaterial:
+    #name: str #TODO AGGIUNGERLO AL DATABASE
     fyk : float
     Es : float
+    esu: float
     #fff:float = field(default=self.fyk/1.5)
 
     def __post_init__(self):
@@ -57,60 +74,39 @@ def create_steel_material(code_name: str, steel_type:str) -> ConcreteMaterial:
     code_name: "NTC18" or "EC2" 
     concrete_type: example: "B450C"
     """
-    with open("reinforced concrete section/steel_database.json") as file:
+    with open("reinforced_concrete/steel_database.json") as file:
         data = json.load(file)[code_name][steel_type]
         return SteelMaterial(**data) 
         
 #############################################################################
+@dataclass
+class Bars:
+    n_bars: int
+    diameter: int
+    steel_material: SteelMaterial
+
+    def area(self):
+        "Area"
+        return self.n_bars * 3.14 * self.diameter**2 / 4
+
+    def __str__(self):
+        "Return a string like:'2Ø4' "
+        return f"{self.n_bars}Ø{self.diameter}"
 
 @dataclass()
-class Geometry:
+class ReinforcedConcreteSection:
     b: int
     d: float
-    d1: float = 0.
-    As: float = 0.
-    As1: float = 0.
+    d1: float 
+    d2: float 
+    concrete: ConcreteMaterial
+    As: Bars
+    As1: Bars
+    name: str = "Section name"
 
     def __post_init__(self):
         self.h = self.d + self.d1
 
-#TODO __print__ per includere il post init
-
-def a(bars: int , diameter: int):
-    return bars * 3.14 * diameter**2 / 4
-
-c = create_concrete_material("EC2","C30/37")
-s = create_steel_material("NTC18","B450C")
-
-print(c)
-print(s) 
-
-b = Geometry(b=500., d=500., As=3200.)
-#def SLE_As1(geeometry: Geometry, concrete: ConcreteMaterial, steel: SteelMaterial):
-   # x = n * As / b * (-1 + sqrt(1+2*b*d/(n*As)))
 
 
-def  SLE_As1_M(M, b, d, As, n=15):
-    x = n * As / b * (-1 + sqrt(1+2*b*d/(n*As)))
-    sigmac = 2 * M / (b*x*(d-x/3))
-    sigmas = n * sigmac * (d - x) / x
 
-    return sigmac, sigmas
-
-#togliere le classi da qui e mettere solo variabili
-def SLE_As1_M_NO(geometry: Geometry, concrete: ConcreteMaterial, steel: SteelMaterial, M):
-    As = geometry.As
-    d = geometry.d
-    b = geometry.b
-
-    x = n * As / b * (-1 + sqrt(1+2*b*d/(n*As)))
-    sigmac = 2 * M / (b*x*(d-x/3))
-    sigmas = n * sigmac * (d - x) / x
-
-    return sigmac, sigmas
-
-print(SLE_As1_M(
-        b= b.b, 
-        d=b.d,
-        As = b.As,
-        M=450000000))

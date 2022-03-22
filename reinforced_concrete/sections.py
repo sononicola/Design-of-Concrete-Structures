@@ -14,7 +14,7 @@ steel = create_steel_material("NTC18","B450C")
 As = Bars(n_bars=6, diameter=20, steel_material=steel)
 As1 = Bars(n_bars=3, diameter=12, steel_material=steel)
 
-section_1 = ReinforcedConcreteSection(b=300, d=410, d1=40, d2=40, concrete=cls, As=As, As1=As1, name="sec1")
+section_1 = ReinforcedConcreteSection(b=300, d=410, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, name="sec1")
 print(cls)
 print(steel)
 print(As)
@@ -99,7 +99,7 @@ class ReinforcedConcreteSection:
     d: float
     d1: float 
     d2: float 
-    concrete: ConcreteMaterial
+    concrete_material: ConcreteMaterial
     As: Bars
     As1: Bars
     name: str = "Section name"

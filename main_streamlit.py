@@ -3,6 +3,9 @@ import json
 from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection
 from reinforced_concrete.ULS import computeVero
 
+from dataclasses import asdict
+import pandas as pd
+
 # -- GENERAL PAGE SETUP --
 st.set_page_config(
      page_title = "Reinforced Concrete design",
@@ -153,15 +156,13 @@ with col4_2:
 
 cls  = create_concrete_material(cls_code_name,concrete_type) 
 steel  = create_steel_material(steel_code_name,steel_type)
-st.write(cls)
-st.write(steel)
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
 section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, name="sec1")
 
 results_dict, logs = computeVero(Med=Med*10**6, Ned=Ned, section=section)
 
-st.write(section.__repr__())
+st.write(asdict(section))
 st.write(results_dict)
 for log in logs:
     st.write(log)

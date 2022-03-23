@@ -22,7 +22,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     if d2 < d2_xi23:
         logs.append(f"Esiste campo 2a, 2b, 3b perchè {d2 = :.2f} < {d2_xi23 = :.2f} mm")
     else:
-        print(f"Esiste campo 2a, 3a, 3b perchè {d2 = :.2f} > {d2_xi23 = :.2f} mm") 
+        logs.append(f"Esiste campo 2a, 3a, 3b perchè {d2 = :.2f} > {d2_xi23 = :.2f} mm") 
     
     # QUESTA xi_3 e la xi_2 dopo OCCORRE VEDERE SE È SEMPRE VALIDA LA PROF O SE LA PROF L'HA SEMPLIFICATA ALTRIMENTI USARE IL SOLVE TODO
     psi = 17/21 
@@ -57,15 +57,14 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             psi = (16*xi-1)/(15*xi) #TODO prendere la formula generica e girarla
             es1 = esu*(xi - d2/d) / (1-xi) 
             eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
-            print("GIUSTO PER VERIFICA DEL SOLVE",sp.solve(eq_trasl, xi, dict=True))
-            xi_2a = sp.solve(eq_trasl, xi, dict=True)[0][xi]
-            
-            logs.append(f"{xi_2a = :.5f}")
+            solution = sp.solve(eq_trasl, xi, dict=True)
+            logs.append(f"GIUSTO PER VERIFICA DEL SOLVE{solution}")
+            xi_2a = solution[0][xi]
             es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
-            logs.append(f"{es1 = :.5%}") 
             ec = (esu * xi_2a)/(1-xi_2a)
-            logs.append(f"{ec = :.5%}") 
-            results["campo"] = "2B" #TODO O 2A??
+            
+            logs.append(f"{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}")
+            results["campo"] = "2A" 
             results["xi"] = xi_2a
             results["es1"] = es1
             results["ec"] = ec

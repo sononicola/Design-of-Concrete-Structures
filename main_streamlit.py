@@ -107,12 +107,12 @@ with col3_1:
         key = "diam_bottom",
         ))
 with col3_2:
-    diam_bottom = int(st.number_input(
+    n_bars_bottom = int(st.number_input(
         label = "diametro barre inferiori [mm]",
         min_value = 2,
         step = 2,
         value=10,
-        key = "diam_bottom",
+        key = "n_bars_bottom",
         ))
 with col3_3:
     diam_up = int(st.number_input(
@@ -123,12 +123,12 @@ with col3_3:
         key = "diam_up",
         ))
 with col3_4:
-    diam_up = int(st.number_input(
+    n_bars_up = int(st.number_input(
         label = "diametro barre superiori [mm]",
         min_value = 2,
         step = 2,
         value=10,
-        key = "diam_up",
+        key = "n_bars_up",
         ))
 # Selezione sollecitazioni
 
@@ -136,7 +136,6 @@ col4_1, col4_2 = st.columns(2)
 with col4_1:
     Med = st.number_input(
         label = "Momento [kNm]",
-        min_value = 1.,
         step = 10.,
         value=100.,
         format = "%.6f",
@@ -145,7 +144,6 @@ with col4_1:
 with col4_2:
     Ned = st.number_input(
         label = "Sforzo assiale [kN] (negativo se trazione)",
-        min_value = 1.,
         step = 10.,
         value=100.,
         format = "%.6f",
@@ -157,8 +155,8 @@ cls  = create_concrete_material(cls_code_name,concrete_type)
 steel  = create_steel_material(steel_code_name,steel_type)
 st.write(cls)
 st.write(steel)
-As = Bars(n_bars=diam_bottom, diameter=diam_bottom, steel_material=steel)
-As1 = Bars(n_bars=diam_up, diameter=diam_up, steel_material=steel)
+As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
+As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
 section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, name="sec1")
 
 results_dict, logs = computeVero(Med=Med*10**6, Ned=Ned, section=section)

@@ -62,7 +62,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             xi_2a = solution[0][xi]
             es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
             ec = (esu * xi_2a)/(1-xi_2a)
-            
+
             logs.append(f"{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}")
             results["campo"] = "2A" 
             results["xi"] = xi_2a
@@ -107,7 +107,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     else:
         "CAMPO 4 IN POI"
         logs.append(f"Oltre campo 3 {xi_3 = :.5f} > di {xi_34 = :.5f}") 
-    
+    print(locals())
     return results, logs
 
     psi = 17/21 

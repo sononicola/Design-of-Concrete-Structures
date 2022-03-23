@@ -5,7 +5,6 @@ from reinforced_concrete.ULS import computeVero
 
 from dataclasses import asdict
 import pandas as pd
-
 # -- GENERAL PAGE SETUP --
 st.set_page_config(
      page_title = "Reinforced Concrete design",
@@ -102,36 +101,36 @@ with col2_4:
 # Selezione caratteristiche acciaio
 col3_1, col3_2 ,col3_3, col3_4 = st.columns(4)
 with col3_1:
-    diam_bottom = int(st.number_input(
+    n_bars_bottom = int(st.number_input(
         label = "n. barre inferiori",
         min_value = 1,
         step = 1,
         value=2,
-        key = "diam_bottom",
+        key = "n_bars_bottom",
         ))
 with col3_2:
-    n_bars_bottom = int(st.number_input(
+    diam_bottom = int(st.number_input(
         label = "diametro barre inferiori [mm]",
         min_value = 2,
         step = 2,
         value=10,
-        key = "n_bars_bottom",
+        key = "diam_bottom",
         ))
 with col3_3:
-    diam_up = int(st.number_input(
+    n_bars_up = int(st.number_input(
         label = "n. barre superiori",
         min_value = 1,
         step = 1,
         value=2,
-        key = "diam_up",
+        key = "n_bars_up",
         ))
 with col3_4:
-    n_bars_up = int(st.number_input(
+    diam_up = int(st.number_input(
         label = "diametro barre superiori [mm]",
         min_value = 2,
         step = 2,
         value=10,
-        key = "n_bars_up",
+        key = "diam_up",
         ))
 # Selezione sollecitazioni
 
@@ -153,16 +152,22 @@ with col4_2:
         key = "Ned",
         )
 
-
 cls  = create_concrete_material(cls_code_name,concrete_type) 
 steel  = create_steel_material(steel_code_name,steel_type)
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
 section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, name="sec1")
 
-results_dict, logs = computeVero(Med=Med*10**6, Ned=Ned, section=section)
+# -- RUNNING PROGRAM --
+
+
+results_dict, logs = computeVero(Med=Med*10**6, Ned=Ned*10**3, section=section)
 
 st.write(asdict(section))
 st.write(results_dict)
 for log in logs:
     st.write(log)
+print(asdict(section))
+print(results_dict)
+for log in logs:
+    print(log)

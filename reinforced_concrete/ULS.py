@@ -1,5 +1,6 @@
 import sympy as sp
 from typing import List, Tuple
+from reinforced_concrete.sections import ReinforcedConcreteSection
 
 def eq_m_prog(b, sigma_c, sigma_s1, xi, d, psi ,lamb, As1, d2):
     return b * psi * xi*d * sigma_c * (d - lamb*xi*d)  + sigma_s1*As1* (d - d2) 
@@ -29,8 +30,8 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     logs.append(f"{xi_3 = :.5f}")
 
     if xi_3 < xi_23:
-        logs.append(f"Ipotesi di campo 3 errata! {xi_3 = :.5f} < di = {xi_23 = :.5f}")
-        logs.append("Ricalcolo con ipotesi di campo 2B: armature superiori snervate")
+        logs.append(f"Ipotesi di campo 3 errata! {xi_3 = :.5f} < {xi_23 = :.5f}")
+        logs.append(f"Ricalcolo con ipotesi di campo 2B: armature superiori snervate")
         xi_2b = 1/16 * (15*(As*fyd - As1*fyd1 + Ned) / (b * fcd * d) + 1)  #TODO
         logs.append(f"{xi_2b = :.5f}")
 
@@ -49,8 +50,8 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
         else:
             "CAMPO 2A"
             logs.append("!!!!!!!!!!!!!!verifica del ec da fare") #TODO
-            logs.append(f"Ipotesi armature superiori snervate errata! {es1 = :.5%} < di {ese1 = :.5%}")
-            logs.append("Ricalcolo con ipotesi di campo 2A: armature superiori in campo elastico")
+            logs.append(f"Ipotesi armature superiori snervate errata! {es1 = :.5%} < {ese1 = :.5%}")
+            logs.append(f"Ricalcolo con ipotesi di campo 2A: armature superiori in campo elastico")
             # simbolico:
             xi = sp.symbols('xi', positive=True)
             psi = (16*xi-1)/(15*xi) #TODO prendere la formula generica e girarla
@@ -71,7 +72,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             results["es"] = esu
     elif xi_3 > xi_23 and xi_3 < xi_34:
         "CAMPO 3A 3B"
-        logs.append(f"Ipotesi di essere in campo 3 ok! {xi_3 = :.5f} > di {xi_23 = :.5f} e < di {xi_34 = :.5f} \nVerifico se 3A o 3B") #TODO
+        logs.append(f"Ipotesi di essere in campo 3 ok! {xi_3 = :.5f} > di {xi_23 = :.5f} e < {xi_34 = :.5f} \nVerifico se 3A o 3B") #TODO
         es1 = ecu/xi_3 * (xi_3 - d2/d)
         if es1 > ese1:
             "CAMPO 3B"
@@ -84,7 +85,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             results["xi"] = xi_3
         else:
             "CAMPO 3A"
-            logs.append(f"Ipotesi armature superiori non corrette, sono in campo elastico: {es1 = :.5%} < di {ese1 = :.5%}\n Devo ricalcolare ricalcolare la xi")
+            logs.append(f"Ipotesi armature superiori non corrette, sono in campo elastico: {es1 = :.5%} < {ese1 = :.5%}\n Devo ricalcolare ricalcolare la xi")
 
             xi = sp.symbols('xi', positive=True)
             psi = 17/21
@@ -113,50 +114,50 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     psi = 17/21 
     lamb = 99/238 #lambda
 
-def layer_object_to_values(ReinforcedConcreteSection): #TODO
-    b = ReinforcedConcreteSection.b
-    As = ReinforcedConcreteSection.As.area()
-    As1 = ReinforcedConcreteSection.As1.area()
-    d = ReinforcedConcreteSection.d
-    d1 = ReinforcedConcreteSection.d1
-    d2 = ReinforcedConcreteSection.d2
+def layer_object_to_values(section:ReinforcedConcreteSection): #TODO
+    b = section.b
+    As = section.As.area()
+    As1 = section.As1.area()
+    d = section.d
+    d1 = section.d1
+    d2 = section.d2
 
-    fck = ReinforcedConcreteSection.concrete_material.fck
-    Ec = ReinforcedConcreteSection.concrete_material.Ecm
-    ec2 = ReinforcedConcreteSection.concrete_material.ec2
-    ecu = ReinforcedConcreteSection.concrete_material.ecu2
+    fck = section.concrete_material.fck
+    Ec = section.concrete_material.Ecm
+    ec2 = section.concrete_material.ec2
+    ecu = section.concrete_material.ecu2
 
-    fyk = ReinforcedConcreteSection.As.steel_material.fyk
-    Es = ReinforcedConcreteSection.As.steel_material.Es
-    ese = ReinforcedConcreteSection.As.steel_material.ese
-    esu = ReinforcedConcreteSection.As.steel_material.esu
+    fyk = section.As.steel_material.fyk
+    Es = section.As.steel_material.Es
+    ese = section.As.steel_material.ese
+    esu = section.As.steel_material.esu
 
-    fyk1 = ReinforcedConcreteSection.As1.steel_material.fyk
-    ese1 = ReinforcedConcreteSection.As1.steel_material.ese
-    esu1 = ReinforcedConcreteSection.As1.steel_material.esu
+    fyk1 = section.As1.steel_material.fyk
+    ese1 = section.As1.steel_material.ese
+    esu1 = section.As1.steel_material.esu
 
-def computeVero(Med,Ned, ReinforcedConcreteSection) -> Tuple[dict, List[str]]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
+def computeVero(Med:float, Ned:float, section:ReinforcedConcreteSection) -> Tuple[dict, List[str]]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
     "Layer: object -> compute function"
     return compute(
             Med=Med,
             Ned=Ned,
-            b=ReinforcedConcreteSection.b,
-            d=ReinforcedConcreteSection.d,
-            d1=ReinforcedConcreteSection.d1,
-            d2=ReinforcedConcreteSection.d2,
-            As=ReinforcedConcreteSection.As.area(),
-            As1=ReinforcedConcreteSection.As1.area(),
-            fcd=ReinforcedConcreteSection.concrete_material.fcd, 
-            ec2=ReinforcedConcreteSection.concrete_material.ec2,
-            ecu=ReinforcedConcreteSection.concrete_material.ecu2,
-            fyd=ReinforcedConcreteSection.As.steel_material.fyd, 
-            Es=ReinforcedConcreteSection.As.steel_material.Es, 
-            ese=ReinforcedConcreteSection.As.steel_material.ese,
-            esu=ReinforcedConcreteSection.As.steel_material.esu,
-            fyd1=ReinforcedConcreteSection.As1.steel_material.fyd,
-            Es1=ReinforcedConcreteSection.As1.steel_material.Es, 
-            ese1=ReinforcedConcreteSection.As1.steel_material.ese,
-            esu1=ReinforcedConcreteSection.As1.steel_material.esu,
+            b=section.b,
+            d=section.d,
+            d1=section.d1,
+            d2=section.d2,
+            As=section.As.area(),
+            As1=section.As1.area(),
+            fcd=section.concrete_material.fcd, 
+            fyd=section.As.steel_material.fyd, 
+            fyd1=section.As1.steel_material.fyd,
+            Es=section.As.steel_material.Es, 
+            Es1=section.As1.steel_material.Es, 
+            ec2=section.concrete_material.ec2,
+            ecu=section.concrete_material.ecu2,
+            ese=section.As.steel_material.ese,
+            esu=section.As.steel_material.esu,
+            ese1=section.As1.steel_material.ese,
+            esu1=section.As1.steel_material.esu,
             # TODO METTERE TUTTI
         )
 

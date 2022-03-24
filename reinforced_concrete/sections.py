@@ -106,7 +106,21 @@ class ReinforcedConcreteSection:
     concrete_material: ConcreteMaterial
     As: Bars
     As1: Bars
-    name: str = "Section name"
+    name: str = "no name assigned"
 
     def __post_init__(self):
         self.h = self.d + self.d1
+    
+    def __str__(self):
+        "Return a beautiful printed string with all usefull properties "
+        return f"""
+Section name: {self.name}
+{'':3}{'CLS ':>4}= {self.concrete_material.name}
+{'':3}{'B ':>4}= {self.b} mm
+{'':3}{'H ':>4}= {self.h} mm
+{'':3}{'d ':>4}= {self.d} mm
+{'':3}{'d1 ':>4}= {self.d1} mm
+{'':3}{'d2 ':>4}= {self.d2} mm
+{'':3}{'As ':>4}= {self.As.__str__():>5} = {self.As.area():>5.0f} mm2 | {self.As.steel_material.name}
+{'':3}{'As1 ':>4}= {self.As1.__str__():>5} = {self.As1.area():>5.0f} mm2 | {self.As1.steel_material.name}
+"""

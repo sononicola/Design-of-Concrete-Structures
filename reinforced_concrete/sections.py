@@ -19,7 +19,8 @@ print(cls.__repr__())
 print(steel.__repr__())
 print(As.__str__())
 print(As.__repr__())
-print(As.area())
+print(As.area)
+print(section_1)
 print(section_1.__repr__())
 
 custom_cls = ConcreteMaterial(bla bla bla)
@@ -89,9 +90,8 @@ class Bars:
     diameter: int
     steel_material: SteelMaterial = create_steel_material("NTC18","B450C")
 
-    def area(self):
-        "Area"
-        return self.n_bars * 3.14 * self.diameter**2 / 4
+    def __post_init__(self):
+        self.area = self.n_bars * 3.14 * self.diameter**2 / 4
 
     def __str__(self):
         "Return a string like:'2Ø4' "
@@ -121,6 +121,6 @@ Section name: {self.name}
 {'':3}{'d ':>4}= {self.d} mm
 {'':3}{'d1 ':>4}= {self.d1} mm
 {'':3}{'d2 ':>4}= {self.d2} mm
-{'':3}{'As ':>4}= {self.As.__str__():>5} = {self.As.area():>5.0f} mm2 | {self.As.steel_material.name}
-{'':3}{'As1 ':>4}= {self.As1.__str__():>5} = {self.As1.area():>5.0f} mm2 | {self.As1.steel_material.name}
+{'':3}{'As ':>4}= {self.As.__str__():>5} = {self.As.area:>5.0f} mm2 | {self.As.steel_material.name}
+{'':3}{'As1 ':>4}= {self.As1.__str__():>5} = {self.As1.area:>5.0f} mm2 | {self.As1.steel_material.name}
 """

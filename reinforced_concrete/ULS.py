@@ -115,8 +115,8 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
 
 def layer_object_to_values(section:ReinforcedConcreteSection): #TODO
     b = section.b
-    As = section.As.area()
-    As1 = section.As1.area()
+    As = section.As.area
+    As1 = section.As1.area
     d = section.d
     d1 = section.d1
     d2 = section.d2
@@ -144,8 +144,8 @@ def computeVero(Med:float, Ned:float, section:ReinforcedConcreteSection) -> Tupl
             d=section.d,
             d1=section.d1,
             d2=section.d2,
-            As=section.As.area(),
-            As1=section.As1.area(),
+            As=section.As.area,
+            As1=section.As1.area,
             fcd=section.concrete_material.fcd, 
             fyd=section.As.steel_material.fyd, 
             fyd1=section.As1.steel_material.fyd,

@@ -156,7 +156,7 @@ cls  = create_concrete_material(cls_code_name,concrete_type)
 steel  = create_steel_material(steel_code_name,steel_type)
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
-section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, name="sec1")
+section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1)
 
 # -- RUNNING PROGRAM --
 
@@ -165,9 +165,6 @@ results_dict, logs = computeVero(Med=Med*10**6, Ned=Ned*10**3, section=section)
 
 st.write(asdict(section))
 st.write(results_dict)
-for log in logs:
-    st.write(log)
-print(asdict(section))
-print(results_dict)
-for log in logs:
-    print(log)
+st.code(logs)
+#print(asdict(section))
+#print(results_dict)

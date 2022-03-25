@@ -8,18 +8,16 @@ def main():
     """
     cls  = create_concrete_material("EC2","C25/30") 
     steel  = create_steel_material("NTC18","B450C")
-    As = Bars(n_bars=6, diameter=14, steel_material=steel)
-    As1 = Bars(n_bars=3, diameter=12, steel_material=steel)
-    section = ReinforcedConcreteSection(b=300, d=410, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, name="sec1")
-
-    results_dict, logs = computeVero(Med=207.2*10**6, Ned=110000, section=section)
-
-    print(section.__repr__())
+   
+    As = Bars(n_bars=5, diameter=16, steel_material=steel)
+    As1 = Bars(n_bars=5, diameter=16, steel_material=steel)
+    section = ReinforcedConcreteSection(b=400, d=310, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, name="sec1")
+    results_dict, logs = computeVero(Med=207.2*10**6, Ned=-22*10**3, section=section)
+    print(section)
+    print(logs)
     print(results_dict)
-    for log in logs:
-        print(log)
 
-    print(section.__dict__)
+   # print(section.__dict__)
 
 if __name__ == "__main__":
     main()

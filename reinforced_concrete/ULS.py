@@ -110,8 +110,8 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     #print(locals())
     return results, logs
 
-    psi = 17/21 
-    lamb = 99/238 #lambda
+    #psi = 17/21 
+    #lamb = 99/238 #lambda
 
 def layer_object_to_values(section:ReinforcedConcreteSection): #TODO
     b = section.b
@@ -135,11 +135,11 @@ def layer_object_to_values(section:ReinforcedConcreteSection): #TODO
     ese1 = section.As1.steel_material.ese
     esu1 = section.As1.steel_material.esu
 
-def computeVero(Med:float, Ned:float, section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
+def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
     "Layer: object -> compute function"
     return compute(
-            Med=Med,
-            Ned=Ned,
+            Med=section.internal_forces.M,
+            Ned=section.internal_forces.N,
             b=section.b,
             d=section.d,
             d1=section.d1,

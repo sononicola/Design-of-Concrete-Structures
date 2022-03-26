@@ -1,7 +1,9 @@
+from unittest import result
 import streamlit as st
 import json
-from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection
+from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces
 from reinforced_concrete.ULS import computeVero
+from reinforced_concrete.sls import sls
 
 from dataclasses import asdict
 import pandas as pd
@@ -156,15 +158,28 @@ cls  = create_concrete_material(cls_code_name,concrete_type)
 steel  = create_steel_material(steel_code_name,steel_type)
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
-section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1)
+forces = InternalForces(M=Med*10**6, N=Ned*10**3)
+section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, internal_forces=forces)
 
 # -- RUNNING PROGRAM --
 
 
-results_dict, logs = computeVero(Med=Med*10**6, Ned=Ned*10**3, section=section)
+results_ULS, logs_ULS = computeVero(section=section)
+results_SLS, logs_SLS = sls(section=section)
 
-st.write(asdict(section))
-st.write(results_dict)
-st.code(logs)
+col5_1, col5_2 = st.columns(2)
+with col5_1:
+    st.subheader("Input:")
+    st.text(section)
+    st.write(asdict(section))
+with col5_2:
+    st.subheader("ULS:")
+    st.write(results_ULS)
+    st.text(logs_ULS)
+
+    st.subheader("SLS:")
+    st.write(results_SLS)
+    st.text(logs_SLS)
+
 #print(asdict(section))
 #print(results_dict)

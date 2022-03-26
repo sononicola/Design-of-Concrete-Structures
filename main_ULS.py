@@ -1,5 +1,6 @@
-from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection
+from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces
 from reinforced_concrete.ULS import computeVero
+#from reinforced_concrete.sls import sls
 
 def main():
     """
@@ -11,12 +12,12 @@ def main():
    
     As = Bars(n_bars=5, diameter=16, steel_material=steel)
     As1 = Bars(n_bars=5, diameter=16, steel_material=steel)
-    section = ReinforcedConcreteSection(b=400, d=310, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, name="sec1")
-    results_dict, logs = computeVero(Med=207.2*10**6, Ned=-22*10**3, section=section)
+    forces = InternalForces(M=207.2*10**6, N=-22*10**3)
+    section = ReinforcedConcreteSection(b=400, d=310, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, internal_forces=forces, name="sec1")
+    results_dict, logs = computeVero(section=section)
     print(section)
     print(logs)
     print(results_dict)
-
    # print(section.__dict__)
 
 if __name__ == "__main__":

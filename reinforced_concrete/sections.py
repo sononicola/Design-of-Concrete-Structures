@@ -42,11 +42,8 @@ class ConcreteMaterial:
     ec3 : float
     ecu3: float
 
-
-    #def __post_init__(self):
-        #self.fcd =  ALPHA_CC * self.fck/GAMMA_C
-        #self.fcm = self.fck + 8
-        #self.Ecm = 22000 * (self.fcm/10)**(0.3)
+    def __post_init__(self):
+        self.sigmac = 0.6 * self.fck
     
 def create_concrete_material(code_name: str, concrete_type:str) -> ConcreteMaterial:
     """
@@ -71,6 +68,7 @@ class SteelMaterial:
     def __post_init__(self):
         self.fyd = self.fyk/GAMMA_S
         self.ese = self.fyd/self.Es
+        self. sigmar = 0.8 * self.fyk
     
     
 def create_steel_material(code_name: str, steel_type:str) -> SteelMaterial:
@@ -98,6 +96,12 @@ class Bars:
         return f"{self.n_bars}Ø{self.diameter}"
 
 @dataclass()
+class InternalForces:
+    M: float = 0.
+    N: float = 0.
+    V: float = 0.
+
+@dataclass()
 class ReinforcedConcreteSection:
     b: int
     d: float
@@ -106,6 +110,7 @@ class ReinforcedConcreteSection:
     concrete_material: ConcreteMaterial
     As: Bars
     As1: Bars
+    internal_forces: InternalForces
     name: str = "no name assigned"
 
     def __post_init__(self):
@@ -123,4 +128,7 @@ Section name: {self.name}
 {'':3}{'d2 ':>4}= {self.d2} mm
 {'':3}{'As ':>4}= {self.As.__str__():>5} = {self.As.area:>5.0f} mm2 | {self.As.steel_material.name}
 {'':3}{'As1 ':>4}= {self.As1.__str__():>5} = {self.As1.area:>5.0f} mm2 | {self.As1.steel_material.name}
+{'':3}{'Med ':>4}= {self.internal_forces.M} Nmm
+{'':3}{'Ned ':>4}= {self.internal_forces.N} N
+{'':3}{'Ved ':>4}= {self.internal_forces.V} N
 """

@@ -79,7 +79,7 @@ with col2_2:
         min_value = 1.,
         step = 10.,
         value=300.,
-        format = "%.0f",
+        format = "%.1f",
         key = "d",
         )
 with col2_3:
@@ -88,7 +88,7 @@ with col2_3:
         min_value = 1.,
         step = 5.,
         value=40.,
-        format = "%.0f",
+        format = "%.1f",
         key = "d1",
         )
 with col2_4:
@@ -97,7 +97,7 @@ with col2_4:
         min_value = 1.,
         step = 5.,
         value=40.,
-        format = "%.0f",
+        format = "%.1f",
         key = "d2",
         )
 # Selezione caratteristiche acciaio

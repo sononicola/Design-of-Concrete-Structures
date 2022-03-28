@@ -9,25 +9,28 @@ GAMMA_S = 1.15
 """
 EXAMPLE OF HOW TO USE IT
 
-cls = create_concrete_material("EC2","C30/37")
-steel = create_steel_material("NTC18","B450C")
-As = Bars(n_bars=6, diameter=20, steel_material=steel)
-As1 = Bars(n_bars=3, diameter=12, steel_material=steel)
-section_1 = ReinforcedConcreteSection(b=300, d=410, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, name="sec1")
+cls  = create_concrete_material("EC2","C25/30", is_sls_qp=False) 
+steel  = create_steel_material("NTC18","B450C")
+As = Bars(n_bars=5, diameter=16, steel_material=steel)
+As1 = Bars(n_bars=5, diameter=16, steel_material=steel)
+forces = InternalForces(M=207.2*10**6, N=-22*10**3)
+section = ReinforcedConcreteSection(b=400, d=310, d1=40, d2=40, concrete_material=cls, As=As, As1=As1, internal_forces=forces, name="sec1")
 
 print(cls.__repr__())
 print(steel.__repr__())
 print(As.__str__())
 print(As.__repr__())
 print(As.area)
-print(section_1)
-print(section_1.__repr__())
+print(section)
+print(section.__repr__())
+print(section.to_dict())
 
 custom_cls = ConcreteMaterial(bla bla bla)
 """
 
 @dataclass()
 class ConcreteMaterial:
+    "is_sls_qp: if True is used to set sigmaCr to the quasi-permanently with is 0.45 fck. Default is False, so sigmaCr is 0.6 fck"
     name : str
     fck : float
     rck : float 
@@ -41,18 +44,23 @@ class ConcreteMaterial:
     ecu2: float
     ec3 : float
     ecu3: float
+    is_sls_qp: bool = False
 
-    def __post_init__(self):
-        self.sigmac = 0.6 * self.fck
+    @property
+    def sigmac(self):
+        return 0.45 * self.fck if self.is_sls_qp else 0.6 * self.fck #TODO rename in sigmar
     
-def create_concrete_material(code_name: str, concrete_type:str) -> ConcreteMaterial:
+def create_concrete_material(code_name: str, concrete_type:str, is_sls_qp=False) -> ConcreteMaterial:
     """
     Create a ConcreteMaterial object using the database values as input
     code_name: "NTC18" or "EC2" 
     concrete_type: example: "C15/20"
+    is_sls_qp: if True is used to set sigmaCr to the quasi-permanently with is 0.45 fck. Default is False, so sigmaCr is 0.6 fck
+    
     """
     with open("reinforced_concrete/concrete_database.json") as file:
         data = json.load(file)[code_name][concrete_type]
+        data["is_sls_qp"] =  is_sls_qp  
         return ConcreteMaterial(**data) 
 
 #############################################################################
@@ -100,7 +108,7 @@ class InternalForces:
     M: float = 0.
     N: float = 0.
     V: float = 0.
-
+    
 @dataclass()
 class ReinforcedConcreteSection:
     b: int
@@ -132,3 +140,24 @@ Section name: {self.name}
 {'':3}{'Ned ':>4}= {self.internal_forces.N} N
 {'':3}{'Ved ':>4}= {self.internal_forces.V} N
 """
+
+    def to_dict(self):
+        "Return a dictionary with all usefull properties. If want all values use asdict(object) after have imported it "
+        return {
+                    "name": self.name,
+                    "CLS": self.concrete_material.name,
+                    "Steel": self.As.steel_material.name,
+                    "Steel1": self.As1.steel_material.name,
+                    "B": self.b,
+                    "H": self.h,
+                    "d":self.d,
+                    "d1": self.d1,
+                    "d2": self.d2,
+                    "As_str": self.As.__str__(),
+                    "As_area" : self.As.area,
+                    "As1_str": self.As1.__str__() ,
+                    "As1_area" : self.As1.area,
+                    "Med": self.internal_forces.M,
+                    "Ned": self.internal_forces.N,
+                    "Ved":self.internal_forces.V
+                }

@@ -7,6 +7,24 @@ def eq_m_prog(b, sigma_c, sigma_s1, xi, d, psi ,lamb, As1, d2):
 def eq_n_prog(b, sigma_c, sigma_s, sigma_s1, xi, d, psi, As, As1):
     return b * psi * xi*d * sigma_c + sigma_s1*As1 - As*sigma_s
 
+def sigmas_or_fyd(Es, es, fyd):
+    return min(fyd, abs(Es*es))
+
+def psi_2(xi, ec2, esu):
+    if xi < 1/6:
+        return xi/(1-xi) * esu/(3 * ec2**2) * (3 * ec2 - xi/(1-xi) * esu)
+    else:
+        return 1 - ( ec2*(1-xi) ) / ( 3*esu*xi )
+
+def lamb_2(xi,ec2, esu):
+# only for n = 2 C<C50/60
+    if xi == 0: #TODO perché si faceva ?
+        return 0
+    elif xi <= 1/6:
+        return (4*ec2 - esu*xi/(1-xi)) / (4*(3*ec2 - esu*xi/(1-xi))) 
+    else:
+        return ( (6*esu**2 + 4*esu*ec2 +  ec2**2)*xi**2 - 2*ec2**2 * xi + ec2**2 - 4*esu*ec2*xi ) / ( 4*esu*xi*((3*esu+ec2)*xi - ec2 ))
+
 def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             Es=210_000, Es1=210_000, ec2=2*10**-3, ecu=3.5*10**-3, \
             ese=1.863*10**-3, esu=10*10**-3, ese1=1.863*10**-3, esu1=10*10**-3) -> Tuple[dict, str]:
@@ -41,12 +59,23 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             logs += "\n!!!!!!!!!!!!!!verifica del ec da fare" #TODO
             logs += f"\nIpotesi armature superiori snervate ok! {es1 = :.5%} > di {ese1 = :.5%}" #TODO per mille sarebbe meglio
             ec = (esu * xi_2b)/(1-xi_2b)
+            es=esu
             logs += f"\n{ec= :.5%}"
+            #ricalcolo della psi e lambda
+            xi = xi_2b
+            psi = psi_2(xi, ec2, esu)
+            lamb = lamb_2(xi, ec2, esu)
+
             results["campo"] = "2B" 
             results["es1"] = es1
             results["ec"] = ec
             results["es"] = esu
             results["xi"] = xi_2b
+            results["psi"] = psi
+            results["lamb"] = lamb
+            results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+            results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+    
         else:
             "CAMPO 2A"
             logs += "\n!!!!!!!!!!!!!!verifica del ec da fare" #TODO
@@ -59,16 +88,26 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
             solution = sp.solve(eq_trasl, xi, dict=True)
             logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
-            xi_2a = solution[0][xi]
+            xi_2a = float(solution[0][xi])
             es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
             ec = (esu * xi_2a)/(1-xi_2a)
-
+            es = esu
             logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
+            
+            #ricalcolo della psi e lambda
+            xi = xi_2a
+            psi = psi_2(xi, ec2, esu)
+            lamb = lamb_2(xi, ec2, esu)
+
             results["campo"] = "2A" 
-            results["xi"] = xi_2a
+            results["xi"] = xi
             results["es1"] = es1
             results["ec"] = ec
-            results["es"] = esu
+            results["es"] = es
+            results["psi"] = psi
+            results["lamb"] = lamb
+            results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+            results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
     elif xi_3 > xi_23 and xi_3 < xi_34:
         "CAMPO 3A 3B"
         logs += f"\nIpotesi di essere in campo 3 ok! {xi_3 = :.5f} > di {xi_23 = :.5f} e < {xi_34 = :.5f} \nVerifico se 3A o 3B" #TODO
@@ -77,11 +116,19 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             "CAMPO 3B"
             logs += f"\nIpotesi armature superiori snervate ok! {es1 = :.5%} > di {ese1 = :.5%}"
             es=ecu/xi_3 * (1 - xi_3)
+            psi = 17/21 
+            lamb = 99/238 #lambda
+            xi=xi_3
             results["campo"] = "3B" 
             results["es"] = es
             results["es1"] = es1
             results["ec"] = ecu
             results["xi"] = xi_3
+            results["psi"] = psi
+            results["lamb"] = lamb
+            results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+            results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+    
         else:
             "CAMPO 3A"
             logs += f"\nIpotesi armature superiori non corrette, sono in campo elastico: {es1 = :.5%} < {ese1 = :.5%}\n Devo ricalcolare ricalcolare la xi"
@@ -97,12 +144,20 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             ec = (esu * xi_3a)/(1-xi_3a)
             logs += f"\n{ec = :.5%}" 
             es=ecu/xi_3a * (1 - xi_3a) 
+            psi = 17/21 
+            lamb = 99/238 #lambda
+            xi=xi_3a
 
             results["campo"] = "3A" 
             results["es"] = es
             results["es1"] = es1
             results["ec"] = ecu
             results["xi"] = xi_3a
+            results["psi"] = psi
+            results["lamb"] = lamb
+            results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+            results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+    
 
     else:
         "CAMPO 4 IN POI"
@@ -110,8 +165,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     #print(locals())
     return results, logs
 
-    #psi = 17/21 
-    #lamb = 99/238 #lambda
+
 
 def layer_object_to_values(section:ReinforcedConcreteSection): #TODO
     b = section.b

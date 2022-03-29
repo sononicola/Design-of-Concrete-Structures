@@ -4,6 +4,7 @@ import json
 from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces
 from reinforced_concrete.ULS import computeVero
 from reinforced_concrete.sls import sls
+from reinforced_concrete.shear import shear
 
 from dataclasses import asdict
 import pandas as pd
@@ -166,6 +167,7 @@ section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cl
 
 results_ULS, logs_ULS = computeVero(section=section)
 results_SLS, logs_SLS = sls(section=section)
+results_Shear = shear(section=section)
 
 col5_1, col5_2 = st.columns(2)
 with col5_1:
@@ -180,6 +182,9 @@ with col5_2:
     st.subheader("SLS:")
     st.write(results_SLS)
     st.text(logs_SLS)
+
+    st.subheader("Shear only CLS:")
+    st.write(results_Shear)
 
 #print(asdict(section))
 #print(results_dict)

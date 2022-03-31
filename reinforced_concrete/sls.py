@@ -33,12 +33,10 @@ def neutral_axis_MN(M, N, b, d, d1, d2, As, As1, n=15):
     return sol
 
 def sigma_c_MN(N, As, As1, x, d, d2, b, n=15):
-    print(f"{(  1/2 *b *x**2 + n*As1*(x-d2) - n*As*(d-x)  )}")
     return abs(N*x / (  1/2 *b *x**2 + n*As1*(x-d2) - n*As*(d-x)  ))
 
 def neutral_axis_MN_tenso(M, N, b, d, d1, d2, As, As1, n=15):
-    d0 = abs(M/N) - (d+d1)/2
-    print(f"{d0 =}")
+    d0 = M/abs(N) - (d+d1)/2
     x = sp.symbols('x')
     eq = -1/6*b*x**3 + 1/2*b*(d0+d+d1)*x**2 + (n*As1*(d0+d+d1-d2) + n*As*(d0+d1))*x - n*As1*d2*(d0+d+d1-d2) - n*As*d*(d0+d1)
     sol = sp.nsolve(eq, x, d/2, dict=True)[0][x] #d/2 is the starting point 

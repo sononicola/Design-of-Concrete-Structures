@@ -120,7 +120,6 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
                 es1 = esu*(xi - d2/d) / (1-xi) 
                 eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
                 solution = sp.nsolve(eq_trasl, xi, xi_2a, dict=True)
-                print(logs)
                 logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
                 xi_2a = float(solution[0][xi])
                 ec = (esu * xi_2a)/(1-xi_2a)
@@ -142,8 +141,6 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
                 results["lamb"] = lamb
                 results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
                 results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
-            else:
-                logs+="BOOOOH ec>ecu"
     elif xi_3 > xi_23 and xi_3 < xi_34:
         "CAMPO 3A 3B"
         logs += f"\nIpotesi di essere in campo 3 ok! {xi_3 = :.5f} > di {xi_23 = :.5f} e < {xi_34 = :.5f} \nVerifico se 3A o 3B" #TODO

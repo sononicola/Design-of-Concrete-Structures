@@ -157,6 +157,17 @@ with col4_2:
 
 cls  = create_concrete_material(cls_code_name,concrete_type) 
 steel  = create_steel_material(steel_code_name,steel_type)
+#Bottone per cambiare il modulo elastico dell'acciaio
+change_Es = st.checkbox(f"Vuoi cambiare il modulo elastico? Attualmente vale {steel.Es/1000} Gpa")
+if change_Es:
+    steel.Es = 1000*st.number_input(
+        label = "Nuovo valore di Es [Gpa]",
+        step = 1.,
+        value=210.,
+        format = "%.1f",
+        key = "Es",
+        )
+
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
 forces = InternalForces(M=Med*10**6, N=Ned*10**3)

@@ -174,6 +174,8 @@ with col5_1:
     st.subheader("Input:")
     st.text(section)
     st.write(asdict(section))
+    st.write("Repr of objects:")
+    st.code(repr(section))
 with col5_2:
     st.subheader("ULS:")
     st.write(results_ULS)

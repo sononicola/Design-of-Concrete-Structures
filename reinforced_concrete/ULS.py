@@ -29,7 +29,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             Es=210_000, Es1=210_000, ec2=2*10**-3, ecu=3.5*10**-3, \
             ese=1.863*10**-3, esu=10*10**-3, ese1=1.863*10**-3, esu1=10*10**-3) -> Tuple[dict, str]:
     results = {}
-    logs = "--- LOG --- \nIpotesi di campo 3, calcolo della retta limite 2-3"
+    logs = "--- LOG --- \nIpotesi di campo 3B, calcolo della retta limite 2-3"
 
     # HP RETTA campo 2-3
     xi_23 = ecu / (ecu + esu)
@@ -48,99 +48,194 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     logs += f"\n{xi_3 = :.5f}"
 
     if xi_3 < xi_23:
-        logs += f"\nIpotesi di campo 3 errata! {xi_3 = :.5f} < {xi_23 = :.5f}"
-        logs += f"\nRicalcolo con ipotesi di campo 2B: armature superiori snervate"
-        xi_2b = 1/16 * (15*(As*fyd - As1*fyd1 + Ned) / (b * fcd * d) + 1)  #TODO
-        logs += f"\n{xi_2b = :.5f}"
-
-        es1 = esu*(xi_2b - d2/d) / (1-xi_2b)
-        if es1 > ese1:
-            "CAMPO 2B"
-            logs += "\n!!!!!!!!!!!!!!verifica del ec da fare" #TODO
-            logs += f"\nIpotesi armature superiori snervate ok! {es1 = :.5%} > di {ese1 = :.5%}" #TODO per mille sarebbe meglio
-            ec = (esu * xi_2b)/(1-xi_2b)
-            if ec<ec2:
-                logs+="FORMULA SBAGLIATA DI PSI PER EC"
-                logs += f"\n{ec= :.5%} {ec2= :.5%}"
-            es=esu
-            #ricalcolo della psi e lambda
-            xi = xi_2b
-            psi = psi_2(xi, ec2, esu)
-            lamb = lamb_2(xi, ec2, esu)
-
-            results["campo"] = "2B" 
-            results["es1"] = es1
-            results["ec"] = ec
-            results["es"] = esu
-            results["xi"] = xi_2b
-            results["psi"] = psi
-            results["lamb"] = lamb
-            results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
-            results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
-        else:
-            "CAMPO 2A"
-            logs += "\n!!!!!!!!!!!!!!verifica del ec da fare" #TODO
-            logs += f"\nIpotesi armature superiori snervate errata! {es1 = :.5%} < {ese1 = :.5%}"
-            logs += f"\nRicalcolo con ipotesi di campo 2A: armature superiori in campo elastico e con ipotesi ec2<ec<ecu"
-            # simbolico:
-            xi = sp.symbols('xi', positive=True)
-            psi = (16*xi-1)/(15*xi) #TODO prendere la formula generica e girarla
-            es1 = esu*(xi - d2/d) / (1-xi) 
-            eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
-            solution = sp.solve(eq_trasl, xi, dict=True)
-            logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
-            xi_2a = float(solution[0][xi])
-            ec = (esu * xi_2a)/(1-xi_2a)
-            if ec > ec2 and ec<ecu:
-                logs+=f"\nIpotesi sul calcestruzzo confermata! ec2<ec<ecu: {ec2 = :.5%} < {ec = :.5%} < {ecu = :.5%}"
-                es = esu
-                es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
-                logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
-                
+        logs += f"\nIpotesi di campo 3 errata! {xi_3 = :.5f} < {xi_23 = :.5f} ma devo comunque verificare tramite es1 perché ho usato hp di es plasticizzato del 3B"
+        if d2 < d2_xi23:
+            logs+= f"\nEssendo {d2 = :.5f} < {d2_xi23 = :.5f}, non può esserci il campo 3A"
+            logs += f"\nCalcolo xi con ipotesi di campo 2B: armature superiori snervate"
+            xi_2b = 1/16 * (15*(As*fyd - As1*fyd1 + Ned) / (b * fcd * d) + 1)  #TODO
+            logs += f"\n{xi_2b = :.5f}"
+            es1 = esu*(xi_2b - d2/d) / (1-xi_2b)
+            if es1 > ese1: #2B
+                logs += "\n!!!!!!!!!!!!!!verifica del ec da fare" #TODO
+                logs += f"\nIpotesi armature superiori snervate ok! {es1 = :.5%} > di {ese1 = :.5%}" #TODO per mille sarebbe meglio
+                ec = (esu * xi_2b)/(1-xi_2b)
+                if ec<ec2:
+                    logs+="FORMULA SBAGLIATA DI PSI PER EC. aggiungere il blocco fatto per 2a"
+                    logs += f"\n{ec= :.5%} {ec2= :.5%}"
+                es=esu
                 #ricalcolo della psi e lambda
-                xi = xi_2a
+                xi = xi_2b
                 psi = psi_2(xi, ec2, esu)
                 lamb = lamb_2(xi, ec2, esu)
 
-                results["campo"] = "2A" 
-                results["xi"] = xi
-                results["es1"] = es1
+                results["campo"] = "2B" 
                 results["ec"] = ec
-                results["es"] = es
+                results["es"] = esu
+                results["es1"] = es1
+                results["xi"] = xi_2b
                 results["psi"] = psi
                 results["lamb"] = lamb
                 results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
                 results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
-            elif ec < ec2:
-                logs+=f"\nIpotesi sul calcestruzzo errata! ec<ec2: {ec = :.5%} < {ec2 = :.5%}"
-                logs+=f"\nRicalcolo di xi con l'altra formula di psi"
+            else: #2A
+                logs += "\n!!!!!!!!!!!!!!verifica del ec da fare" #TODO
+                logs += f"\nIpotesi armature superiori snervate errata! {es1 = :.5%} < {ese1 = :.5%}"
+                logs += f"\nRicalcolo con ipotesi di campo 2A: armature superiori in campo elastico e con ipotesi ec2<ec<ecu"
                 # simbolico:
-                xi = sp.symbols('xi')
-                psi = (-5*xi*(8*xi-3))/(3*(xi-1)**2) #TODO prendere la formula generica e girarla
+                xi = sp.symbols('xi', positive=True)
+                psi = (16*xi-1)/(15*xi) #TODO prendere la formula generica e girarla
                 es1 = esu*(xi - d2/d) / (1-xi) 
                 eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
-                solution = sp.nsolve(eq_trasl, xi, xi_2a, dict=True)
+                solution = sp.solve(eq_trasl, xi, dict=True)
                 logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
                 xi_2a = float(solution[0][xi])
                 ec = (esu * xi_2a)/(1-xi_2a)
-                es = esu
-                es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
-                logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
-                
-                #ricalcolo della psi e lambda
-                xi = xi_2a
-                psi = psi_2(xi, ec2, esu)
-                lamb = lamb_2(xi, ec2, esu)
+                logs += f"\n{xi_2a = :.5f}, {ec = :.5%}"
+                if ec > ec2 and ec<ecu:
+                    logs+=f"\nIpotesi sul calcestruzzo confermata! ec2<ec<ecu: {ec2 = :.5%} < {ec = :.5%} < {ecu = :.5%}"
+                    es = esu
+                    es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
+                    logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
+                    
+                    #ricalcolo della psi e lambda
+                    xi = xi_2a
+                    psi = psi_2(xi, ec2, esu)
+                    lamb = lamb_2(xi, ec2, esu)
 
-                results["campo"] = "2A" 
-                results["xi"] = xi
-                results["es1"] = es1
-                results["ec"] = ec
+                    results["campo"] = "2A-2" 
+                    results["ec"] = ec
+                    results["es"] = es
+                    results["es1"] = es1
+                    results["xi"] = xi
+                    results["psi"] = psi
+                    results["lamb"] = lamb
+                    results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+                    results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+                elif ec < ec2:
+                    logs+=f"\nIpotesi sul calcestruzzo errata! ec<ec2: {ec = :.5%} < {ec2 = :.5%}"
+                    logs+=f"\nRicalcolo di xi con l'altra formula di psi"
+                    # simbolico:
+                    xi = sp.symbols('xi')
+                    psi = (-5*xi*(8*xi-3))/(3*(xi-1)**2) #TODO prendere la formula generica e girarla
+                    es1 = esu*(xi - d2/d) / (1-xi) 
+                    eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
+                    solution = sp.nsolve(eq_trasl, xi, xi_2a, dict=True)
+                    logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
+                    xi_2a = float(solution[0][xi])
+                    ec = (esu * xi_2a)/(1-xi_2a)
+                    es = esu
+                    es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
+                    logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
+                    
+                    #ricalcolo della psi e lambda
+                    xi = xi_2a
+                    psi = psi_2(xi, ec2, esu)
+                    lamb = lamb_2(xi, ec2, esu)
+
+                    results["campo"] = "2A-1" 
+                    results["ec"] = ec
+                    results["es"] = es
+                    results["es1"] = es1
+                    results["xi"] = xi
+                    results["psi"] = psi
+                    results["lamb"] = lamb
+                    results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+                    results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+                elif ec>ecu:
+                    logs+=f"\nIpotesi sul calcestruzzo errata! ec>ecu: {ec = :.5%} > {ecu = :.5%} QUINDI BOH" 
+        elif d2 > d2_xi23:  #quindi 2a o 3a  
+            logs+= f"\nEssendo {d2 = :.5f} > {d2_xi23 = :.5f}, non può esserci il campo 2B"
+            logs+= f"\nVerifica del 3A o 2A guardando la xi_3a rispetto xi23. Calcolo della xi_3a con ipotesi di es1 elastico"
+            xi = sp.symbols('xi', positive=True)
+            psi = 17/21
+            es1 = ecu/xi * (xi - d2/d)
+            eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
+            solution = sp.solve(eq_trasl, xi, dict=True)
+            logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
+            xi_3a = float(solution[0][xi])
+            if xi_3a > xi_23:
+                logs+= f"\nSono in campo 3A perché {xi_3a = :.5f} > {xi_23 = :.5f}"
+                es1 = ecu/xi_3a * (xi_3a - d2/d)
+                logs += f"\n{es1 = :.5%}, che è minore di {ese1 = :.5%} quindi ipotesi di es1 elastico ok" 
+                ec = (esu * xi_3a)/(1-xi_3a)
+                logs += f"\n{ec = :.5%} > ecu: {ec>ecu}. VERIFICARE CHE SIA VERO" 
+                es=ecu/xi_3a * (1 - xi_3a) 
+                psi = 17/21 
+                lamb = 99/238 #lambda
+                xi=xi_3a
+                results["campo"] = "3A" 
+                results["ec"] = ecu
                 results["es"] = es
+                results["es1"] = es1
+                results["xi"] = xi_3a
                 results["psi"] = psi
                 results["lamb"] = lamb
                 results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
                 results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+            else:
+                logs+= f"\nSono in campo 2A perché {xi_3a = :.5f} < {xi_23 = :.5f}. Ricalcolo xi con ipotesi 2A-2 ec2<ec<ecu"
+                # simbolico:
+                xi = sp.symbols('xi', positive=True)
+                psi = (16*xi-1)/(15*xi) #TODO prendere la formula generica e girarla
+                es1 = esu*(xi - d2/d) / (1-xi) 
+                eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
+                solution = sp.solve(eq_trasl, xi, dict=True)
+                logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
+                xi_2a = float(solution[0][xi])
+                ec = (esu * xi_2a)/(1-xi_2a)
+                logs += f"\n{xi_2a = :.5f}, {ec = :.5%}"
+                if ec > ec2 and ec<ecu:
+                    logs+=f"\nIpotesi sul calcestruzzo confermata! ec2<ec<ecu: {ec2 = :.5%} < {ec = :.5%} < {ecu = :.5%}"
+                    es = esu
+                    es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
+                    logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
+                    
+                    #ricalcolo della psi e lambda
+                    xi = xi_2a
+                    psi = psi_2(xi, ec2, esu)
+                    lamb = lamb_2(xi, ec2, esu)
+
+                    results["campo"] = "2A-2" 
+                    results["ec"] = ec
+                    results["es"] = es
+                    results["es1"] = es1
+                    results["xi"] = xi
+                    results["psi"] = psi
+                    results["lamb"] = lamb
+                    results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+                    results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+                elif ec < ec2:
+                    logs+=f"\nIpotesi sul calcestruzzo errata! ec<ec2: {ec = :.5%} < {ec2 = :.5%}"
+                    logs+=f"\nRicalcolo di xi con l'altra formula di psi"
+                    # simbolico:
+                    xi = sp.symbols('xi')
+                    psi = (-5*xi*(8*xi-3))/(3*(xi-1)**2) #TODO prendere la formula generica e girarla
+                    es1 = esu*(xi - d2/d) / (1-xi) 
+                    eq_trasl = eq_n_prog(b=b, sigma_c=fcd, sigma_s=fyd, sigma_s1=Es1*es1, xi=xi, d=d, psi=psi, As=As, As1=As1) - Ned
+                    solution = sp.nsolve(eq_trasl, xi, xi_2a, dict=True)
+                    logs += f"\nGIUSTO PER VERIFICA DEL SOLVE{solution}"
+                    xi_2a = float(solution[0][xi])
+                    ec = (esu * xi_2a)/(1-xi_2a)
+                    es = esu
+                    es1 = esu*(xi_2a - d2/d) / (1-xi_2a)
+                    logs += f"\n{xi_2a = :.5f}\n{es1 = :.5%}\n{ec = :.5%}"
+                    
+                    #ricalcolo della psi e lambda
+                    xi = xi_2a
+                    psi = psi_2(xi, ec2, esu)
+                    lamb = lamb_2(xi, ec2, esu)
+
+                    results["campo"] = "2A-1" 
+                    results["ec"] = ec
+                    results["es"] = es
+                    results["es1"] = es1
+                    results["xi"] = xi
+                    results["psi"] = psi
+                    results["lamb"] = lamb
+                    results["Nrd"] = eq_n_prog(b=b, sigma_c=fcd, sigma_s=sigmas_or_fyd(Es,es,fyd), sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi, As=As, As1=As1)
+                    results["Mrd"] = eq_m_prog(b=b, sigma_c=fcd, sigma_s1=sigmas_or_fyd(Es1,es1,fyd1), xi=xi, d=d, psi=psi ,lamb=lamb, As1=As1, d2=d2)
+                elif ec>ecu:
+                    logs+=f"\nIpotesi sul calcestruzzo errata! ec>ecu: {ec = :.5%} > {ecu = :.5%} QUINDI BOH" 
     elif xi_3 > xi_23 and xi_3 < xi_34:
         "CAMPO 3A 3B"
         logs += f"\nIpotesi di essere in campo 3 ok! {xi_3 = :.5f} > di {xi_23 = :.5f} e < {xi_34 = :.5f} \nVerifico se 3A o 3B" #TODO
@@ -153,9 +248,9 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             lamb = 99/238 #lambda
             xi=xi_3
             results["campo"] = "3B" 
+            results["ec"] = ecu
             results["es"] = es
             results["es1"] = es1
-            results["ec"] = ecu
             results["xi"] = xi_3
             results["psi"] = psi
             results["lamb"] = lamb
@@ -164,7 +259,7 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
     
         else:
             "CAMPO 3A"
-            logs += f"\nIpotesi armature superiori non corrette, sono in campo elastico: {es1 = :.5%} < {ese1 = :.5%}\n Devo ricalcolare ricalcolare la xi"
+            logs += f"\nIpotesi armature superiori non corrette, sono in campo elastico: {es1 = :.5%} < {ese1 = :.5%}\nDevo ricalcolare ricalcolare la xi"
 
             xi = sp.symbols('xi', positive=True)
             psi = 17/21
@@ -175,16 +270,15 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
             es1 = ecu/xi_3a * (xi_3a - d2/d)
             logs += f"\n{es1 = :.5%}, che è minore di {ese1 = :.5%} quindi ipotesi di 3A OK" 
             ec = (esu * xi_3a)/(1-xi_3a)
-            logs += f"\n{ec = :.5%}" 
+            logs += f"\n{ec = :.5%} > ecu: {ec>ecu}. VERIFICARE CHE SIA VERO" 
             es=ecu/xi_3a * (1 - xi_3a) 
             psi = 17/21 
             lamb = 99/238 #lambda
             xi=xi_3a
-
             results["campo"] = "3A" 
+            results["ec"] = ecu
             results["es"] = es
             results["es1"] = es1
-            results["ec"] = ecu
             results["xi"] = xi_3a
             results["psi"] = psi
             results["lamb"] = lamb
@@ -244,8 +338,3 @@ def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CA
             esu1=section.As1.steel_material.esu,
             # TODO METTERE TUTTI
         )
-
-
-    
-
-

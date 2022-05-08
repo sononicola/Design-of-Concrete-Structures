@@ -40,7 +40,7 @@ def shear_only_cls_layer(section: ReinforcedConcreteSection, gamma_c=1.5, alpha_
     results[">Ved"] = results["Vrd"] > section.internal_forces.V
     return results
 
-def theta_calc(bw, Asw, alpha, s, alpha_c, fck, fyk, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15):
+def theta_calc(bw, Asw, alpha, s, alpha_c, fck, fyk, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15) -> float:
     """
     alpha e theta in deg!
     """
@@ -51,11 +51,19 @@ def theta_calc(bw, Asw, alpha, s, alpha_c, fck, fyk, gamma_c=1.5, alpha_cc=0.85,
     cotg_theta = np.sqrt(-1 + alpha_c*bw*fcd*nu*s/(Asw*fyd*np.sin(np.deg2rad(alpha))))
     return np.rad2deg(np.arctan( 1/ cotg_theta)) # arc cotg theta
 
-def shear_with_specific_armor(d, bw, Asw, alpha, theta, s, alpha_c, fck, fyk, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15) -> dict:
+def calc_theta_real(theta_calculated: float) -> float:
+    "Input a theta calculated with theta_calc"
+    if 21.8<theta_calculated<45:
+        return theta_calculated
+    elif theta_calculated>=45:
+        return 45
+    else:
+        return 21.8
+
+def calc_vrd(d, bw, Asw, alpha, theta, s, alpha_c, fck, fyk, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15) -> dict:
     """
     alpha e theta in deg!
     """
-
     nu = 0.5 #resistenza di progetto a compressione ridotta del calcestruzzo d’anima
     fcd = fck*alpha_cc/gamma_c
     fyd = fyk/gamma_s
@@ -70,36 +78,49 @@ def shear_with_specific_armor(d, bw, Asw, alpha, theta, s, alpha_c, fck, fyk, ga
     }
     return results
 
-def shear_with_specific_armor_layer(section: ReinforcedConcreteSection, alpha_c, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15):
+def shear_with_specific_armor(d, bw, Asw, alpha, s, alpha_c, fck, fyk, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15) -> dict:
     theta_calculated = theta_calc(
-        bw=section.b, 
-        Asw=section.stirrups.area, 
-        alpha=section.stirrups.alpha, 
-        s=section.stirrups.spacing, 
+        bw=bw, 
+        Asw=Asw, 
+        alpha=alpha, 
+        s=s, 
         alpha_c=alpha_c, 
-        fck=section.concrete_material.fck, 
-        fyk=section.As.steel_material.fyk, 
+        fck=fck, 
+        fyk=fyk, 
         gamma_c=gamma_c, 
         alpha_cc=alpha_cc, 
         gamma_s=gamma_s
     )
     results = {"theta_calculated": theta_calculated}
 
-    if 21.8<theta_calculated<45:
-        theta_real = theta_calculated
-    elif theta_calculated>=45:
-        theta_real=45
-    else:
-        theta_real=21.8
+    theta_real = calc_theta_real(theta_calculated)
     results["theta_real"] = theta_real
 
     results.update(
-        shear_with_specific_armor(
+        calc_vrd(
+            d=d,
+            bw=bw, 
+            Asw=Asw, 
+            alpha=alpha, 
+            theta=theta_real,
+            s=s, 
+            alpha_c=alpha_c, 
+            fck=fck, 
+            fyk=fyk, 
+            gamma_c=gamma_c, 
+            alpha_cc=alpha_cc, 
+            gamma_s=gamma_s
+        )
+    )
+    return results
+
+def shear_with_specific_armor_layer(section: ReinforcedConcreteSection, alpha_c, gamma_c=1.5, alpha_cc=0.85, gamma_s=1.15):
+    
+    results = shear_with_specific_armor(
             d=section.d, 
             bw=section.b, 
             Asw=section.stirrups.area, 
-            alpha=section.stirrups.alpha, 
-            theta=theta_real, 
+            alpha=section.stirrups.alpha,  
             s=section.stirrups.spacing, 
             alpha_c=alpha_c, 
             fck=section.concrete_material.fck, 
@@ -108,6 +129,5 @@ def shear_with_specific_armor_layer(section: ReinforcedConcreteSection, alpha_c,
             alpha_cc=alpha_cc, 
             gamma_s=gamma_s
             )
-        )
     results[">Ved"] = results["Vr_d"] > section.internal_forces.V
     return results

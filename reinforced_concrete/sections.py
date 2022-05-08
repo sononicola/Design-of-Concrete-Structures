@@ -97,11 +97,26 @@ class Bars:
     steel_material: SteelMaterial = create_steel_material("NTC18","B450C")
 
     def __post_init__(self):
-        self.area = self.n_bars * 3.14 * self.diameter**2 / 4
+        self.area = self.n_bars * 3.1415 * self.diameter**2 / 4
 
     def __str__(self):
         "Return a string like:'2Ø4' "
         return f"{self.n_bars}Ø{self.diameter}"
+
+@dataclass
+class Stirrups:
+    n_braces: int 
+    diameter: int 
+    spacing: int 
+    alpha: int = 90
+    steel_material: SteelMaterial = create_steel_material("NTC18","B450C")
+
+    def __post_init__(self):
+        self.area = self.n_braces * 3.1415 * self.diameter**2 / 4
+
+    def __str__(self):
+        "Return a string like:'2Ø4' "
+        return f"{self.n_braces}Ø{self.diameter}/{self.spacing}"
 
 @dataclass()
 class InternalForces:
@@ -119,6 +134,7 @@ class ReinforcedConcreteSection:
     As: Bars
     As1: Bars
     internal_forces: InternalForces
+    stirrups: Stirrups = None
     name: str = "no name assigned"
 
     def __post_init__(self):

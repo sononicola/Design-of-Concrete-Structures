@@ -115,7 +115,7 @@ class Stirrups:
         self.area = self.n_braces * 3.1415 * self.diameter**2 / 4
 
     def __str__(self):
-        "Return a string like:'2Ø4' "
+        "Return a string like:'2Ø8/200' "
         return f"{self.n_braces}Ø{self.diameter}/{self.spacing}"
 
 @dataclass()
@@ -173,6 +173,7 @@ Section name: {self.name}
                     "As_area" : self.As.area,
                     "As1_str": self.As1.__str__() ,
                     "As1_area" : self.As1.area,
+                    "Ast_str" : self.stirrups.__str__(),
                     "Med": self.internal_forces.M,
                     "Ned": self.internal_forces.N,
                     "Ved":self.internal_forces.V

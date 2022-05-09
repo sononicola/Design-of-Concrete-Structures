@@ -1,7 +1,7 @@
 from unittest import result
 import streamlit as st
 import json
-from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces
+from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces, Stirrups
 from reinforced_concrete.ULS import computeVero
 from reinforced_concrete.sls import sls
 from reinforced_concrete.shear import shear_only_cls_layer, shear_with_specific_armor_layer
@@ -135,8 +135,36 @@ with col3_4:
         value=10,
         key = "diam_up",
         ))
-# Selezione sollecitazioni
 
+# Selezione caratteristiche staffe
+col5_1, col5_2 ,col5_3, col5_4 = st.columns(4)
+with col3_1:
+    n_braces = int(st.number_input(
+        label = "n. bracci staffe",
+        min_value = 2,
+        step = 1,
+        value=2,
+        key = "n_braces",
+        ))
+with col3_2:
+    diam_stirrups = int(st.number_input(
+        label = "diametro staffe [mm]",
+        min_value = 2,
+        step = 2,
+        value=8,
+        key = "diam_stirrups",
+        ))
+with col3_3:
+    s_stirrups = int(st.number_input(
+        label = "passo staffe [mm]",
+        min_value = 40,
+        step = 10,
+        value = 140,
+        key = "s_stirrups",
+        ))
+
+
+# Selezione sollecitazioni
 col4_1, col4_2 = st.columns(2)
 with col4_1:
     Med = st.number_input(
@@ -171,7 +199,8 @@ if change_Es:
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
 forces = InternalForces(M=Med*10**6, N=Ned*10**3)
-section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, internal_forces=forces)
+stirrups = Stirrups(n_braces=n_braces, diameter=diam_stirrups,spacing=s_stirrups, alpha=90, steel_material=steel) #TODO alpha e alpha c fuori
+section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, internal_forces=forces, stirrups=stirrups)
 
 st.write("Repr of objects:")
 st.code(repr(section))
@@ -180,7 +209,7 @@ st.code(repr(section))
 results_ULS, logs_ULS = computeVero(section=section)
 results_SLS, logs_SLS = sls(section=section)
 results_ULS_shear_no_armor = shear_only_cls_layer(section=section)
-#results_ULS_shear_with_armor = shear_with_specific_armor_layer(section=section, alpha_c=1)
+results_ULS_shear_with_armor = shear_with_specific_armor_layer(section=section, alpha_c=1)
 
 col5_1, col5_2 = st.columns(2)
 with col5_1:
@@ -201,7 +230,7 @@ with col5_2:
     st.write(results_ULS_shear_no_armor)
 
     st.subheader("Shear with armor:")
-    #st.write(results_ULS_shear_with_armor)
+    st.write(results_ULS_shear_with_armor)
 
 #print(asdict(section))
 #print(results_dict)

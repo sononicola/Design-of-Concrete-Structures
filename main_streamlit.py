@@ -4,7 +4,7 @@ import json
 from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces
 from reinforced_concrete.ULS import computeVero
 from reinforced_concrete.sls import sls
-from reinforced_concrete.shear import shear
+from reinforced_concrete.shear import shear_only_cls_layer, shear_with_specific_armor_layer
 
 from dataclasses import asdict
 import pandas as pd
@@ -173,20 +173,21 @@ As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
 forces = InternalForces(M=Med*10**6, N=Ned*10**3)
 section = ReinforcedConcreteSection(b=b, d=d, d1=d1, d2=d2, concrete_material=cls, As=As, As1=As1, internal_forces=forces)
 
+st.write("Repr of objects:")
+st.code(repr(section))
+
 # -- RUNNING PROGRAM --
-
-
 results_ULS, logs_ULS = computeVero(section=section)
 results_SLS, logs_SLS = sls(section=section)
-results_Shear = shear(section=section)
+results_ULS_shear_no_armor = shear_only_cls_layer(section=section)
+#results_ULS_shear_with_armor = shear_with_specific_armor_layer(section=section, alpha_c=1)
 
 col5_1, col5_2 = st.columns(2)
 with col5_1:
     st.subheader("Input:")
     st.text(section)
     st.write(asdict(section))
-    st.write("Repr of objects:")
-    st.code(repr(section))
+    
 with col5_2:
     st.subheader("ULS:")
     st.write(results_ULS)
@@ -197,7 +198,10 @@ with col5_2:
     st.text(logs_SLS)
 
     st.subheader("Shear only CLS:")
-    st.write(results_Shear)
+    st.write(results_ULS_shear_no_armor)
+
+    st.subheader("Shear with armor:")
+    #st.write(results_ULS_shear_with_armor)
 
 #print(asdict(section))
 #print(results_dict)

@@ -272,6 +272,8 @@ TSWLatexianTemp*
 # Makeindex log files
 *.lpz
 .ipynb_checkpoints/
-reinforced_concrete/__pycache__/sections.cpython-39.pyc
-MN_interaction_diagram/__pycache__/diagram.cpython-39.pyc
-reinforced_concrete/__pycache__/sls.cpython-39.pyc
+reinforced_concrete/__pycache__/
+MN_interaction_diagram/__pycache__/
+reinforced_concrete/__pycache__/
+*.pyc
+TDCexport/

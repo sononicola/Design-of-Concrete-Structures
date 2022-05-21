@@ -1,6 +1,9 @@
-from modulefinder import LOAD_CONST
 import sympy as sp
 from scipy.integrate import quad
+
+from reinforced_concrete.sections import create_concrete_material, create_steel_material, Bars, ReinforcedConcreteSection, InternalForces, Stirrups
+from typing import List
+
 
 def zeta(m_cr:float, m_Q:sp.Function, beta:float) -> sp.Function:
     return 1 - beta*(m_cr/m_Q)**2
@@ -11,7 +14,7 @@ def chi(m_cr:float, m_Q:sp.Function, Inn_1:float, c:float, Ecm:float, beta:float
     return chi_1 if c==1 else chi_1 * (1 + zeta(m_cr=m_cr, m_Q=m_Q, beta=beta)*(c-1))
 
 def calc_c(m_ed:float, m_cr:float, Inn_1:float, Inn_2:float) -> float:
-    return 1 if m_ed <= m_cr else Inn_1/Inn_2
+    return 1 if abs(m_ed) <= abs(m_cr) else Inn_1/Inn_2
 
 def deformazione(m_ed:float, m_cr:float, xi_a:float, xi_b:float, xi_max:float, Q:float, L:float, Inn_1:float, Inn_2:float, Ecm:float, beta:float):
     xi = sp.symbols('xi')
@@ -51,6 +54,30 @@ print("---")
 delta = deformazione(m_ed=40e6, m_cr=36.91e6, xi_a=1965, xi_b=3133, xi_max=1965, Q=50, L=4_960, Inn_1=1_514_424_394, Inn_2=978_984_614, Ecm=32_836.57, beta=0.5)
 print(f"{delta = }")
 
+def deflection_ReinforcedConcreteSection(list_of_sections:list[ReinforcedConcreteSection], list_of_xi_coords:list, xi_max:float, load:float, span_lenght:float, beta:float, coef_fctm=1, n:float = 15, n1:float=1) -> dict:
+    "coef_fctm: 1.2 if want sigma_ctm = fctm/1.2, or 1 if not"   
+    if len(list_of_sections) != len(list_of_xi_coords) - 1:
+        raise ValueError(f"La lunghezza della lista dei punti di ascissa deve essere n+1 quella della lista delle sezioni")
+    
+    list_of_delta = []
+    for section, i in zip(list_of_sections, range(len(list_of_xi_coords)-1)):
+        delta = deformazione(
+            m_ed=section.internal_forces.M, 
+            m_cr=section.m_cr(coef_fctm=coef_fctm, n=n, n1=n1), 
+            xi_a=list_of_xi_coords[i], 
+            xi_b=list_of_xi_coords[i+1], 
+            xi_max=xi_max, Q=load, L=span_lenght, 
+            Inn_1=section.Inn_1(n=n, n1=n1), 
+            Inn_2=section.Inn_2(n=n), 
+            Ecm=section.concrete_material.Ecm, 
+            beta=beta)
+
+        print(f"{section.m_cr(coef_fctm=coef_fctm, n=n, n1=n1) = :_.0f}")
+        print(" =============== ")
+        list_of_delta.append(delta)
+    
+    return list_of_delta
+
 def main():
     xi_coords = [0,798,1965,3133]
     m_ed = [20e6, 40e6, 40e6]
@@ -68,5 +95,36 @@ def main():
         delta = deformazione(m_ed=m_ed[i], m_cr=m_cr[i], xi_a=xi_coords[i], xi_b=xi_coords[i+1], xi_max=XI_MAX, Q=LOAD, L=SPAN_LENGHT, Inn_1=Inn_1[i], Inn_2=Inn_2[i], Ecm=ECM, beta=BETA)
         print(delta)
 
+def main_sec():
+    cls  = create_concrete_material("EC2","C25/30") 
+    steel  = create_steel_material("NTC18","B450C")
+
+    sec = ReinforcedConcreteSection(
+        b=300, 
+        d=460, 
+        d1=40, 
+        d2=40, 
+        concrete_material=cls, 
+        As=Bars(n_bars=4, diameter=18, steel_material=steel), 
+        As1=Bars(n_bars=2, diameter=18, steel_material=steel), 
+        stirrups=Stirrups(n_braces=2, diameter=8, spacing=220, alpha=90),
+        internal_forces=InternalForces(M=79.04*10**6, N=0.), 
+        name="C5_QP"
+        ) 
+    SECTIONS_LIST = [sec]
+    XI_LIST = [0,100]
+    XI_MAX = 1965
+    LOAD = 40
+    SPAN_LENGHT = 4_960
+
+    deflection_ReinforcedConcreteSection(
+        list_of_sections=SECTIONS_LIST, 
+        list_of_xi_coords=XI_LIST, 
+        xi_max=XI_MAX, 
+        load=LOAD,
+        span_lenght=SPAN_LENGHT,
+        beta=0.5)
+
+
 if __name__ == "__main__":
-    main()        
+    main_sec()        

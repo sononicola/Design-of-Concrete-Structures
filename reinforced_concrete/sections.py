@@ -140,15 +140,34 @@ class ReinforcedConcreteSection:
     def __post_init__(self):
         self.h = self.d + self.d1
 
+
+    def neutral_axis_1_M(self, n=15):
+        return (n*(self.As.area*self.d + self.As1.area*self.d2) + self.b*self.h**2/2)/(n*(self.As.area + self.As1.area) + self.b*self.h)
+
     def Inn_1(self, n=15, n1=1) -> float:
         """
-        Return the moment of inertia when CLS is in state 1, so the CLS tension strenght is considered. Only bending moment applied.
+        Return the moment of inertia when CLS is in state 1 (so the CLS tension strenght is considered) and when only M is applied. Only bending moment applied.
         n = Es/Ec. Default = 15
         n1 = Ec_tension/Ec_compression. Default = 1
         """
         x = (n*(self.As.area*self.d + self.As1.area*self.d2) + self.b*self.h**2/2)/(n*(self.As.area + self.As1.area) + self.b*self.h)
+        print(f"x_1 = {x}")
         return self.b*x**3/3 + n*self.As1.area*(x-self.d2)**2 + n1*self.b*(self.h-x)**3/3 + n*self.As.area*(self.d-x)**2
     
+    def Inn_2(self, n=15) -> float:
+        """
+        Return the moment of inertia when CLS is in state 2 (so the CLS tension strenght is NOT considered) and when only M is applied. Only bending moment applied.
+        n = Es/Ec. Default = 15
+        n1 = Ec_tension/Ec_compression. Default = 1
+        """
+        x = n*(self.As.area+self.As1.area)/self.b * (-1 + sqrt(1+ (2*self.b*(self.As1.area*self.d2 + self.As.area*self.d))/(n*(self.As.area + self.As1.area)**2)))
+        print(f"x_2 = {x}")
+        return self.b*x**3/3 + n*self.As1.area*(x-self.d2)**2 + n*self.As.area*(self.d-x)**2
+
+    def m_cr(self, coef_fctm:float, n=15, n1=1):
+        "coef_fctm: 1.2 if want sigma_ctm = fctm/1.2, or 0 if not"
+        return self.concrete_material.fctm/(coef_fctm*n1) * self.Inn_1(n=n, n1=n1)/(self.h - self.neutral_axis_1_M(n=n))
+
     def __str__(self):
         "Return a beautiful printed string with all usefull properties "
         return f"""

@@ -139,6 +139,15 @@ class ReinforcedConcreteSection:
 
     def __post_init__(self):
         self.h = self.d + self.d1
+
+    def Inn_1(self, n=15, n1=1) -> float:
+        """
+        Return the moment of inertia when CLS is in state 1, so the CLS tension strenght is considered. Only bending moment applied.
+        n = Es/Ec. Default = 15
+        n1 = Ec_tension/Ec_compression. Default = 1
+        """
+        x = (n*(self.As.area*self.d + self.As1.area*self.d2) + self.b*self.h**2/2)/(n*(self.As.area + self.As1.area) + self.b*self.h)
+        return self.b*x**3/3 + n*self.As1.area*(x-self.d2)**2 + n1*self.b*(self.h-x)**3/3 + n*self.As.area*(self.d-x)**2
     
     def __str__(self):
         "Return a beautiful printed string with all usefull properties "

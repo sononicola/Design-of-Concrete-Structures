@@ -1,7 +1,6 @@
-streamlit==1.5.0
+streamlit==1.10.0
 sympy==1.9
 numpy==1.22.1
 pandas==1.4.0
 matplotlib==3.5.1 
 SciencePlots
-click==8

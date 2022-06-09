@@ -138,7 +138,7 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                 )
-        As, d = design.design_b_constrain(cls=cls, steel=steel, beta=beta, b=b, Med=Med, d2= d2)
+        As, d = design.design_b_constrain(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, d2= d2)
         st.subheader("Soluzione:")
 
         st.write(f"As = {As:.2f} mm2") 

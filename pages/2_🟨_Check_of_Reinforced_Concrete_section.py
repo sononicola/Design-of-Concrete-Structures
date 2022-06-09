@@ -53,11 +53,11 @@ with col1_3:
             key = "avaiable_steel_code_name"            
     ) 
 with open("reinforced_concrete/steel_database.json") as file:
-    avaiable_steel_concrete_type = list(json.load(file)[steel_code_name])
+    avaiable_steel_type = list(json.load(file)[steel_code_name])
 with col1_4:
     steel_type = st.selectbox(
             label = "Tipologia Acciaio", 
-            options = avaiable_steel_concrete_type, 
+            options = avaiable_steel_type, 
             index= 0,
             key = "avaiable_steel_type"            
     ) 

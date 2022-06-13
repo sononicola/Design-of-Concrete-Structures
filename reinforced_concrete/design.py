@@ -146,7 +146,7 @@ def T_straight_M(cls, steel, b: float, d: float, Med: float) -> dict:
     As and xi have to be found """
 
     As, xi = sp.symbols("As, xi")
-    
+
     ec2 = cls.ec2
     esu = steel.esu
     psi = xi / (1 - xi) * esu / (3 * ec2 ** 2) * (3 * ec2 - xi / (1 - xi) * esu)
@@ -179,7 +179,7 @@ def T_straight_M(cls, steel, b: float, d: float, Med: float) -> dict:
     xi_sympy = sp.re(sp.solve(eq_m23 - abs(Med), xi)[1])
     sol_2A_prog = sp.nsolve(
         (eq_m23 - abs(Med), eq_n23), (xi, As), (0.1, 200), dict=True
-    )[0] 
+    )[0]
     npt.assert_almost_equal(float(xi_sympy), float(sol_2A_prog[xi]), decimal=5)
     return {"xi": sol_2A_prog[xi], "As": sol_2A_prog[As]}
 

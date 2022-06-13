@@ -188,13 +188,14 @@ if section_geometry == "Rettangolare":
 if section_geometry == "T":
     col3_1, col3_2, col3_3, col3_4 = st.columns(4)
     with col3_1 :
-        b = st.number_input(
-            label = "Base piccola b [mm]",
+        B = st.number_input(
+            label = "Base grande B [mm]",
             min_value = 1.,
             step = 10.,
             value=300.,
             format = "%.0f",
             key = "Base",
+            help = "Corrisponde all'interasse del travetto",
             )
     with col3_2:
         d = st.number_input(
@@ -214,7 +215,7 @@ if section_geometry == "T":
             format = "%.1f",
             key = "d1",
             )
-    sol = design.T_straight_M(cls=cls, steel=steel, b=b, d=d, Med=Med*10**6)
+    sol = design.T_straight_M(cls=cls, steel=steel, b=B, d=d, Med=Med*10**6)
 
 if section_geometry == "T rovesciata":
     col3_1, col3_2, col3_3, col3_4 = st.columns(4)

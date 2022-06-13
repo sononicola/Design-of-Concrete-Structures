@@ -106,10 +106,10 @@ if section_geometry == "Rettangolare":
             beta = st.number_input(
             label = "beta = As/As1",
             min_value = 0.,
-            max_value=1.,
+            max_value=.99, #TODO
             step = .1,
             value=0.5,
-            format = "%.1f",
+            format = "%.2f",
             key = "beta",
             )
         with col3_2:
@@ -139,7 +139,7 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                 )
-        sol = design.design_b_constrain(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, d2= d2)
+        sol = design.rect_b_constrain_M(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, d2= d2)
 
 
 
@@ -150,7 +150,7 @@ if section_geometry == "Rettangolare":
             beta = st.number_input(
                 label = "beta = As/As1",
                 min_value = 0.,
-                max_value=1.0,
+                max_value=.99, #TODO
                 step = .1,
                 value=.5,
                 format = "%.2f",
@@ -183,7 +183,69 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                     )
-        sol = design.design_d_constrain(cls=cls, steel=steel, beta=beta, d=d, Med=Med*10**6, d2= d2)
+        sol = design.rect_d_constrain_M(cls=cls, steel=steel, beta=beta, d=d, Med=Med*10**6, d2= d2)
+
+if section_geometry == "T":
+    col3_1, col3_2, col3_3, col3_4 = st.columns(4)
+    with col3_1 :
+        b = st.number_input(
+            label = "Base piccola b [mm]",
+            min_value = 1.,
+            step = 10.,
+            value=300.,
+            format = "%.0f",
+            key = "Base",
+            )
+    with col3_2:
+        d = st.number_input(
+                label = "Altezza utile d [mm]",
+                min_value = 1.,
+                step = 10.,
+                value=300.,
+                format = "%.0f",
+                key = "d",
+                )
+    with col3_3:
+        d1 = st.number_input(
+            label = "Copriferro inferiore d1 [mm]",
+            min_value = 1.,
+            step = 5.,
+            value=40.,
+            format = "%.1f",
+            key = "d1",
+            )
+    sol = design.T_straight_M(cls=cls, steel=steel, b=b, d=d, Med=Med*10**6)
+
+if section_geometry == "T rovesciata":
+    col3_1, col3_2, col3_3, col3_4 = st.columns(4)
+    with col3_1 :
+        b = st.number_input(
+            label = "Base piccola b [mm]",
+            min_value = 1.,
+            step = 10.,
+            value=300.,
+            format = "%.0f",
+            key = "Base",
+            )
+    with col3_2:
+        d = st.number_input(
+                label = "Altezza utile d [mm]",
+                min_value = 1.,
+                step = 10.,
+                value=300.,
+                format = "%.0f",
+                key = "d",
+                )
+    with col3_3:
+        d1 = st.number_input(
+            label = "Copriferro inferiore d1 [mm]",
+            min_value = 1.,
+            step = 5.,
+            value=40.,
+            format = "%.1f",
+            key = "d1",
+            )
+    sol = design.T_inverted_M(cls=cls, steel=steel, b=b, d=d, Med=Med*10**6)
 
 # ----------- OUTPUT    
 st.write("---")                 
@@ -199,10 +261,14 @@ with col5_1:
         n = 1 + int(sol["As"] / (3.14 * diam ** 2 / 4))
         st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
 with col5_2:
-    st.markdown("$A^\prime_s$")
-    for diam in [12, 14, 16, 18, 20, 22]:
-        n = 1 + int(sol["As1"] / (3.14 * diam ** 2 / 4))
-        st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
+    if section_geometry == "Rettangolare":
+        st.markdown("$A^\prime_s$")
+        for diam in [12, 14, 16, 18, 20, 22]:
+            n = 1 + int(sol["As1"] / (3.14 * diam ** 2 / 4))
+            st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
+    else:
+        st.write("")
+
 
 
 

@@ -87,15 +87,16 @@ with col4_1:
         key = "Med",
         )
 with col4_2:
-    Ned = st.number_input(
-        label = "Sforzo assiale [kN] (negativo se trazione)",
-        step = 10.,
-        value=100.,
-        format = "%.6f",
-        key = "Ned",
-        )
+    st.write("") #TODO
+    # Ned = st.number_input(
+    #     label = "Sforzo assiale [kN] (negativo se trazione)",
+    #     step = 10.,
+    #     value=100.,
+    #     format = "%.6f",
+    #     key = "Ned",
+    #     )
 
-section_geometry = st.radio("Scegli la forma della sezione", options=("Rettangolare", "T"))
+section_geometry = st.radio("Scegli la forma della sezione", options=("Rettangolare", "T", "T rovesciata"))
 
 if section_geometry == "Rettangolare":
     design_constrain = st.radio("Scegli il vincolo per il progetto", options=("Base fissata", "Altezza utile fissata"))
@@ -105,9 +106,9 @@ if section_geometry == "Rettangolare":
             beta = st.number_input(
             label = "beta = As/As1",
             min_value = 0.,
-            max_value=1.0,
+            max_value=1.,
             step = .1,
-            value=.5,
+            value=0.5,
             format = "%.1f",
             key = "beta",
             )
@@ -138,17 +139,7 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                 )
-        As, d = design.design_b_constrain(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, d2= d2)
-        st.subheader("Soluzione:")
-
-        st.write(f"As = {As:.2f} mm2") 
-        st.write(f"As1 = {As*beta:.2f} mm2") 
-        st.write(f"d = {d:.2f} mm") 
-
-        st.subheader("Possibili scelte:")
-        for diam in [12, 14, 16, 18, 20, 22]:
-            n = 1 + int(As / (3.14 * diam ** 2 / 4))
-            st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
+        sol = design.design_b_constrain(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, d2= d2)
 
 
 
@@ -192,7 +183,26 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                     )
+        sol = design.design_d_constrain(cls=cls, steel=steel, beta=beta, d=d, Med=Med*10**6, d2= d2)
 
+# ----------- OUTPUT    
+st.write("---")                 
+st.subheader("Soluzione:")
+st.write(sol) 
+
+        
+st.subheader("Possibili scelte:")
+col5_1, col5_2 = st.columns(2)
+with col5_1:
+    st.markdown("$A_s$")
+    for diam in [12, 14, 16, 18, 20, 22]:
+        n = 1 + int(sol["As"] / (3.14 * diam ** 2 / 4))
+        st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
+with col5_2:
+    st.markdown("$A^\prime_s$")
+    for diam in [12, 14, 16, 18, 20, 22]:
+        n = 1 + int(sol["As1"] / (3.14 * diam ** 2 / 4))
+        st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
 
 
 

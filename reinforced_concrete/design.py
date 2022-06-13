@@ -17,7 +17,7 @@ def design_b_constrain(
     b: float,
     Med: float,
     d2: float,
-) -> tuple:
+) -> dict:
     xi_23 = cls.ecu2 / (cls.ecu2 + steel.esu)
     psi = 17 / 21
     lamb = 99 / 238  # lambda
@@ -47,4 +47,53 @@ def design_b_constrain(
         As1=beta * As,
     )
     sol_23_prog = sp.solve((eq_m23 - Med, eq_n23), As, d, dict=True)[0]
-    return sol_23_prog[As], sol_23_prog[d]
+    return {
+        "xi_23": xi_23,
+        "As": sol_23_prog[As],
+        "As1": sol_23_prog[As] * beta,
+        "d": sol_23_prog[d],
+    }
+
+def design_d_constrain(
+    cls: ConcreteMaterial,
+    steel: SteelMaterial,
+    beta: float,
+    d: float,
+    Med: float,
+    d2: float,
+) -> dict:
+    xi_23 = cls.ecu2 / (cls.ecu2 + steel.esu)
+    psi = 17 / 21
+    lamb = 99 / 238  # lambda
+    # print(f"{xi_23 = }")
+
+    As, b = sp.symbols("As, b", positive=True)
+    eq_m23 = eq_m_prog(
+        b=b,
+        sigma_c=cls.fcd,
+        sigma_s1=steel.fyd,
+        xi=xi_23,
+        d=d,
+        psi=psi,
+        lamb=lamb,
+        As1=beta * As,
+        d2=d2,
+    )
+    eq_n23 = eq_n_prog(
+        b=b,
+        sigma_c=cls.fcd,
+        sigma_s=steel.fyd,
+        sigma_s1=steel.fyd,
+        xi=xi_23,
+        d=d,
+        psi=psi,
+        As=As,
+        As1=beta * As,
+    )
+    sol_23_prog = sp.solve((eq_m23 - Med, eq_n23), As, b, dict=True)[0]
+    return {
+        "xi_23": xi_23,
+        "As": sol_23_prog[As],
+        "As1": sol_23_prog[As] * beta,
+        "b": sol_23_prog[b],
+    }

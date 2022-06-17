@@ -82,7 +82,7 @@ with col4_1:
     Med = st.number_input(
         label = "Momento [kNm]",
         step = 10.,
-        value=100.,
+        value=10.,
         format = "%.6f",
         key = "Med",
         )
@@ -258,15 +258,11 @@ st.subheader("Possibili scelte:")
 col5_1, col5_2 = st.columns(2)
 with col5_1:
     st.markdown("$A_s$")
-    for diam in [12, 14, 16, 18, 20, 22]:
-        n = 1 + int(sol["As"] / (3.14 * diam ** 2 / 4))
-        st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
+    st.text(design.possible_areas(minimum_area=sol["As"]))
 with col5_2:
     if section_geometry == "Rettangolare":
         st.markdown("$A^\prime_s$")
-        for diam in [12, 14, 16, 18, 20, 22]:
-            n = 1 + int(sol["As1"] / (3.14 * diam ** 2 / 4))
-            st.write(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2")
+        st.text(design.possible_areas(minimum_area=sol["As1"]))
     else:
         st.write("")
 

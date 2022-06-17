@@ -52,9 +52,9 @@ def rect_b_constrain_M(
     sol_23_prog = sp.solve((eq_m23 - Med, eq_n23), As, d, dict=True)[0]
     return {
         "xi_23": xi_23,
-        "As": sol_23_prog[As],
-        "As1": sol_23_prog[As] * beta,
-        "d": sol_23_prog[d],
+        "As": float(sol_23_prog[As]),
+        "As1": float(sol_23_prog[As] * beta),
+        "d": float(sol_23_prog[d]),
     }
 
 
@@ -97,9 +97,9 @@ def rect_d_constrain_M(
     sol_23_prog = sp.solve((eq_m23 - Med, eq_n23), As, b, dict=True)[0]
     return {
         "xi_23": xi_23,
-        "As": sol_23_prog[As],
-        "As1": sol_23_prog[As] * beta,
-        "b": sol_23_prog[b],
+        "As": float(sol_23_prog[As]),
+        "As1": float(sol_23_prog[As] * beta),
+        "b": float(sol_23_prog[b]),
     }
 
 
@@ -137,7 +137,7 @@ def T_inverted_M(
         As1=0,  # there is no As1 area in T sections
     )
     sol_3_prog = sp.solve((eq_m23 - abs(Med), eq_n23), As, xi, dict=True)[0]
-    return {"xi": sol_3_prog[xi], "As": sol_3_prog[As]}
+    return {"xi": float(sol_3_prog[xi]), "As": float(sol_3_prog[As])}
 
 
 def T_straight_M(cls, steel, b: float, d: float, Med: float) -> dict:
@@ -181,5 +181,13 @@ def T_straight_M(cls, steel, b: float, d: float, Med: float) -> dict:
         (eq_m23 - abs(Med), eq_n23), (xi, As), (0.1, 200), dict=True
     )[0]
     npt.assert_almost_equal(float(xi_sympy), float(sol_2A_prog[xi]), decimal=5)
-    return {"xi": sol_2A_prog[xi], "As": sol_2A_prog[As]}
+    return {"xi": float(sol_2A_prog[xi]), "As": float(sol_2A_prog[As])}
 
+
+def possible_areas(minimum_area: float, diams: list = [12, 14, 16, 18, 20, 22]) -> str:
+    string = []
+    for diam in diams:
+        n = 1 + int(minimum_area / (3.14 * diam ** 2 / 4))
+        string.append(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2  \n")
+
+    return "".join(string)

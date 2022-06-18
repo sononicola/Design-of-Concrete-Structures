@@ -75,6 +75,7 @@ if change_Es:
         key = "Es",
         )
 
+st.write("---")
 
 # Selezione sollecitazioni
 col4_1, col4_2 = st.columns(2)
@@ -87,16 +88,20 @@ with col4_1:
         key = "Med",
         )
 with col4_2:
-    st.write("") #TODO
-    # Ned = st.number_input(
-    #     label = "Sforzo assiale [kN] (negativo se trazione)",
-    #     step = 10.,
-    #     value=100.,
-    #     format = "%.6f",
-    #     key = "Ned",
-    #     )
+    st.write("") 
+    Ned = st.number_input(
+        label = "Sforzo assiale [kN]",
+        help= "Positivo se di compressione nella struttura",
+        step = 10.,
+        value=0.,
+        format = "%.6f",
+        key = "Ned",
+        )
 
 section_geometry = st.radio("Scegli la forma della sezione", options=("Rettangolare", "T", "T rovesciata"))
+
+if section_geometry != "Rettangolare":
+    st.warning("Ocio ai risultati: non è stato testato a sufficienza!")
 
 if section_geometry == "Rettangolare":
     design_constrain = st.radio("Scegli il vincolo per il progetto", options=("Base fissata", "Altezza utile fissata"))
@@ -139,7 +144,7 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                 )
-        sol = design.rect_b_constrain_M(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, d2= d2)
+        sol = design.rect_b_constrain(cls=cls, steel=steel, beta=beta, b=b, Med=Med*10**6, Ned=Ned*10**3, d2= d2)
 
 
 
@@ -183,7 +188,7 @@ if section_geometry == "Rettangolare":
                 format = "%.1f",
                 key = "d2",
                     )
-        sol = design.rect_d_constrain_M(cls=cls, steel=steel, beta=beta, d=d, Med=Med*10**6, d2= d2)
+        sol = design.rect_d_constrain(cls=cls, steel=steel, beta=beta, d=d, Med=Med*10**6, Ned=Ned*10**3, d2= d2)
 
 if section_geometry == "T":
     col3_1, col3_2, col3_3, col3_4 = st.columns(4)
@@ -215,7 +220,7 @@ if section_geometry == "T":
             format = "%.1f",
             key = "d1",
             )
-    sol = design.T_straight_M(cls=cls, steel=steel, b=B, d=d, Med=Med*10**6)
+    sol = design.T_straight_M(cls=cls, steel=steel, b=B, d=d, Med=Med*10**6, Ned=Ned*10**3)
 
 if section_geometry == "T rovesciata":
     col3_1, col3_2, col3_3, col3_4 = st.columns(4)
@@ -246,7 +251,7 @@ if section_geometry == "T rovesciata":
             format = "%.1f",
             key = "d1",
             )
-    sol = design.T_inverted_M(cls=cls, steel=steel, b=b, d=d, Med=Med*10**6)
+    sol = design.T_inverted_M(cls=cls, steel=steel, b=b, d=d, Med=Med*10**6, Ned=Ned*10**3)
 
 # ----------- OUTPUT    
 st.write("---")                 

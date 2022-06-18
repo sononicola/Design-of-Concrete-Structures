@@ -13,12 +13,13 @@ def eq_n_prog(b, sigma_c, sigma_s, sigma_s1, xi, d, psi, As, As1):
     return b * psi * xi * d * sigma_c + sigma_s1 * As1 - As * sigma_s
 
 
-def rect_b_constrain_M(
+def rect_b_constrain(
     cls: ConcreteMaterial,
     steel: SteelMaterial,
     beta: float,
     b: float,
     Med: float,
+    Ned: float,
     d2: float,
 ) -> dict:
     "rectangular section with b and beta fixed, and with only M applied. As and d have to be found "
@@ -49,7 +50,7 @@ def rect_b_constrain_M(
         As=As,
         As1=beta * As,
     )
-    sol_23_prog = sp.solve((eq_m23 - Med, eq_n23), As, d, dict=True)[0]
+    sol_23_prog = sp.solve((eq_m23 - Med, eq_n23 - Ned), As, d, dict=True)[0]
     return {
         "xi_23": xi_23,
         "As": float(sol_23_prog[As]),
@@ -58,12 +59,13 @@ def rect_b_constrain_M(
     }
 
 
-def rect_d_constrain_M(
+def rect_d_constrain(
     cls: ConcreteMaterial,
     steel: SteelMaterial,
     beta: float,
     d: float,
     Med: float,
+    Ned: float,
     d2: float,
 ) -> dict:
     "rectangular section with d and beta fixed, and with only M applied. As and b have to be found "
@@ -94,7 +96,7 @@ def rect_d_constrain_M(
         As=As,
         As1=beta * As,
     )
-    sol_23_prog = sp.solve((eq_m23 - Med, eq_n23), As, b, dict=True)[0]
+    sol_23_prog = sp.solve((eq_m23 - Med, eq_n23 - Ned), As, b, dict=True)[0]
     return {
         "xi_23": xi_23,
         "As": float(sol_23_prog[As]),
@@ -104,7 +106,12 @@ def rect_d_constrain_M(
 
 
 def T_inverted_M(
-    cls: ConcreteMaterial, steel: SteelMaterial, b: float, d: float, Med: float
+    cls: ConcreteMaterial,
+    steel: SteelMaterial,
+    b: float,
+    d: float,
+    Med: float,
+    Ned: float,
 ) -> dict:
     """T inverted section b and d fixed, and with only M applied. 
     b is the lower base.
@@ -136,11 +143,18 @@ def T_inverted_M(
         As=As,
         As1=0,  # there is no As1 area in T sections
     )
-    sol_3_prog = sp.solve((eq_m23 - abs(Med), eq_n23), As, xi, dict=True)[0]
+    sol_3_prog = sp.solve((eq_m23 - abs(Med), eq_n23 - Ned), As, xi, dict=True)[0]
     return {"xi": float(sol_3_prog[xi]), "As": float(sol_3_prog[As])}
 
 
-def T_straight_M(cls, steel, b: float, d: float, Med: float) -> dict:
+def T_straight_M(
+    cls: ConcreteMaterial,
+    steel: SteelMaterial,
+    b: float,
+    d: float,
+    Med: float,
+    Ned: float,
+) -> dict:
     """T section b and d fixed, and with only M applied. 
     b is the upper base.
     As and xi have to be found """
@@ -178,7 +192,7 @@ def T_straight_M(cls, steel, b: float, d: float, Med: float) -> dict:
     # Due to sympy bugs, I'm calculating xi with two different methods and checking then if they are (almost) equals
     xi_sympy = sp.re(sp.solve(eq_m23 - abs(Med), xi)[1])
     sol_2A_prog = sp.nsolve(
-        (eq_m23 - abs(Med), eq_n23), (xi, As), (0.1, 200), dict=True
+        (eq_m23 - abs(Med), eq_n23 - Ned), (xi, As), (0.1, 200), dict=True
     )[0]
     npt.assert_almost_equal(float(xi_sympy), float(sol_2A_prog[xi]), decimal=5)
     return {"xi": float(sol_2A_prog[xi]), "As": float(sol_2A_prog[As])}

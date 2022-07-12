@@ -2,6 +2,7 @@ import sympy as sp
 from scipy.integrate import quad, simpson
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.typing import ArrayLike
 
 from reinforced_concrete.sections import (
     create_concrete_material,
@@ -13,10 +14,10 @@ from reinforced_concrete.sections import (
 )
 
 
-def zeta(m_cr: float, m_Q: np.array, beta: float) -> np.array:
+def zeta(m_cr: float, m_Q: ArrayLike, beta: float) -> ArrayLike:
     with np.errstate(divide="ignore", invalid="ignore"):  # altrimenti rompe il cazzo quando si divide per zero
         zeta = 1 - beta * (m_cr / m_Q) ** 2
-    if zeta is np.nan:
+    if zeta is np.nan: # altrimento continua a dare NaN fino al risultato finale
         return 1 - beta
     return zeta
 
@@ -33,13 +34,13 @@ def chi(
 
 
 def chi_np(
-    m_cr: float, m_Q: np.array, Inn_1: float, c: float, Ecm: float, beta: float
-) -> np.array:
+    m_cr: float, m_Q: ArrayLike, Inn_1: float, c: float, Ecm: float, beta: float
+) -> ArrayLike:
     """
     c: Inn_2/Inn_1. c=1 se non fessurata e quindi rimane solo chi_1
     m_Q è il vettore che plotta il diagramma reale del momento con la combinazione che genera il massimo momento di campata, non l'inviluppo
     """
-    chi_1: np.array = m_Q / (Ecm * Inn_1)
+    chi_1: ArrayLike = m_Q / (Ecm * Inn_1)
 
     zeta_vero = zeta(m_cr=m_cr, m_Q=m_Q, beta=beta)
     if zeta_vero is np.inf or -np.inf:
@@ -57,7 +58,7 @@ def calc_c(m_ed: float, m_cr: float, Inn_1: float, Inn_2: float) -> float:
 def deformazione(
     m_ed: float,
     m_cr: float,
-    m_Q: np.array,
+    m_Q: ArrayLike,
     xi_a: float,
     xi_b: float,
     xi_max: float,
@@ -112,7 +113,7 @@ def deformazione(
 
 
 def deflection_ReinforcedConcreteSection(
-    m_Q: np.array,
+    m_Q: ArrayLike,
     list_of_sections: list[ReinforcedConcreteSection],
     list_of_xi_coords: list,
     xi_max: float,

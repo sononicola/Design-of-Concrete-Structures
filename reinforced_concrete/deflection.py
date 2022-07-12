@@ -1,6 +1,7 @@
 import sympy as sp
 from scipy.integrate import quad, simpson
 import numpy as np
+import matplotlib.pyplot as plt
 
 from reinforced_concrete.sections import (
     create_concrete_material,
@@ -91,13 +92,13 @@ def deformazione(
     c = calc_c(m_ed=m_ed, m_cr=m_cr, Inn_1=Inn_1, Inn_2=Inn_2)
     print(f"{c = }")
 
-    chi_vera = chi_np(m_cr=m_cr, m_Q=m_Q, Inn_1=Inn_1, c=c, Ecm=Ecm, beta=beta)
+    chi_vera = chi_np(m_cr=m_cr, m_Q=m_Q[xi_a:xi_b], Inn_1=Inn_1, c=c, Ecm=Ecm, beta=beta)
     print(f"{chi_vera = }")
     print(f"{xi_a = :_.0f} | {xi_b = :_.0f}| {Inn_1 = :_.0f}| {Inn_2 = :_.0f}")
     # return sp.integrate(chi_vera*m_F, (xi, xi_a, xi_b))
     # return quad(sp.lambdify(xi, chi_vera*m_F), xi_a, xi_b)[0]
     m_F_f = sp.lambdify(xi, m_F)
-    m_F_np = m_F_f(np.linspace(0, len(m_Q), num=len(m_Q)))
+    m_F_np = m_F_f(np.linspace(xi_a, xi_b, num=xi_b-xi_a))
     return simpson(chi_vera * m_F_np)
 
 

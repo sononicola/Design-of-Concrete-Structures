@@ -7,8 +7,9 @@ def eq_m_prog(b, sigma_c, sigma_s1, xi, d, psi ,lamb, As1, d2):
 def eq_n_prog(b, sigma_c, sigma_s, sigma_s1, xi, d, psi, As, As1):
     return b * psi * xi*d * sigma_c + sigma_s1*As1 - As*sigma_s
 
-def sigmas_or_fyd(Es, es, fyd):
-    return min(fyd, abs(Es*es))
+def sigmas_or_fyd(Es, es, fyd) -> float:
+    return min(fyd, abs(Es*es)) 
+    #return min(fyd, Es*es) if es>0 else max(-fyd, Es*es)
 
 def psi_2(xi, ec2, esu):
     if xi < 1/6:
@@ -338,3 +339,7 @@ def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CA
             esu1=section.As1.steel_material.esu,
             # TODO METTERE TUTTI
         )
+
+def Nrd_pils(section: ReinforcedConcreteSection) -> float: #TODO inserirla dentro a compue, usando un if sul MEd==0
+    "Calc Nrd with the formula 0.8*Ac*fcd + As*fyd"
+    return 0.8*section.Ac_h*section.concrete_material.fcd + section.As.area*section.As.steel_material.fyd + section.As1.area*section.As1.steel_material.fyd

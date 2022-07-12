@@ -41,7 +41,7 @@ def deformazione(m_ed:float, m_cr:float, xi_a:float, xi_b:float, xi_max:float, Q
 
     chi_vera = chi(m_cr=m_cr, m_Q=m_Q, Inn_1=Inn_1, c=c, Ecm=Ecm, beta=beta)
     print(f"{chi_vera = }")
-    
+    print(f"{xi_a = :_.0f} | {xi_b = :_.0f}| {Inn_1 = :_.0f}| {Inn_2 = :_.0f}")
     #return sp.integrate(chi_vera*m_F, (xi, xi_a, xi_b))
     return quad(sp.lambdify(xi, chi_vera*m_F), xi_a, xi_b)[0]
 
@@ -55,10 +55,15 @@ delta = deformazione(m_ed=40e6, m_cr=36.91e6, xi_a=1965, xi_b=3133, xi_max=1965,
 print(f"{delta = }")
 
 def deflection_ReinforcedConcreteSection(list_of_sections:list[ReinforcedConcreteSection], list_of_xi_coords:list, xi_max:float, load:float, span_lenght:float, beta:float, coef_fctm=1, n:float = 15, n1:float=1) -> dict:
-    "coef_fctm: 1.2 if want sigma_ctm = fctm/1.2, or 1 if not"   
+    """
+    xi_max:  axciss wehere the is the max M_ed value. This axciss must be also inside the list_of_coords!
+    coef_fctm: 1.2 if want sigma_ctm = fctm/1.2, or 1 if not
+    """   
     if len(list_of_sections) != len(list_of_xi_coords) - 1:
         raise ValueError(f"La lunghezza della lista dei punti di ascissa deve essere n+1 quella della lista delle sezioni")
-    
+    if xi_max not in list_of_xi_coords:
+        raise ValueError(f"La coordinata xi_max deve anche essere dentro alla lista di coordinate list_of_xi_coords.\nTale valore viene usato per determinare se usare M_sx o M_dx")
+
     list_of_delta = []
     for section, i in zip(list_of_sections, range(len(list_of_xi_coords)-1)):
         delta = deformazione(
@@ -66,12 +71,15 @@ def deflection_ReinforcedConcreteSection(list_of_sections:list[ReinforcedConcret
             m_cr=section.m_cr(coef_fctm=coef_fctm, n=n, n1=n1), 
             xi_a=list_of_xi_coords[i], 
             xi_b=list_of_xi_coords[i+1], 
-            xi_max=xi_max, Q=load, L=span_lenght, 
+            xi_max=xi_max, 
+            Q=load, 
+            L=span_lenght, 
             Inn_1=section.Inn_1(n=n, n1=n1), 
             Inn_2=section.Inn_2(n=n), 
             Ecm=section.concrete_material.Ecm, 
             beta=beta)
 
+        print(section.name)
         print(f"{section.m_cr(coef_fctm=coef_fctm, n=n, n1=n1) = :_.0f}")
         print(" =============== ")
         list_of_delta.append(delta)

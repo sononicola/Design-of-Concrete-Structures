@@ -5,6 +5,9 @@ from math import sqrt
 GAMMA_C = 1.5
 ALPHA_CC = 0.85
 GAMMA_S = 1.15
+from pathlib import Path
+
+path = Path(__file__).resolve().parent
 
 """
 EXAMPLE OF HOW TO USE IT
@@ -64,10 +67,10 @@ def create_concrete_material(
     is_sls_qp: if True is used to set sigmaCr to the quasi-permanently with is 0.45 fck. Default is False, so sigmaCr is 0.6 fck
     
     """
-    with open("reinforced_concrete/concrete_database.json") as file:
-        data = json.load(file)[code_name][concrete_type]
-        data["is_sls_qp"] = is_sls_qp
-        return ConcreteMaterial(**data)
+
+    data = json.loads((path / "concrete_database.json").read_text())[code_name][concrete_type]
+    data["is_sls_qp"] = is_sls_qp
+    return ConcreteMaterial(**data)
 
 
 #############################################################################
@@ -93,9 +96,8 @@ def create_steel_material(code_name: str, steel_type: str) -> SteelMaterial:
     code_name: "NTC18" or "EC2" 
     concrete_type: example: "B450C"
     """
-    with open("reinforced_concrete/steel_database.json") as file:
-        data = json.load(file)[code_name][steel_type]
-        return SteelMaterial(**data)
+    data = json.loads((path / "steel_database.json").read_text())[code_name][steel_type]
+    return SteelMaterial(**data)
 
 
 #############################################################################

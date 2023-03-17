@@ -7,6 +7,8 @@ from dataclasses import asdict
 import pandas as pd
 
 from reinforced_concrete import design
+from pathlib import Path
+path = Path(__file__).resolve().parent.parent / "reinforced_concrete"
 
 # -- GENERAL PAGE SETUP --
 st.set_page_config(
@@ -23,8 +25,7 @@ st.title("Design of Reinforced Concrete section")
 # Selezione dei materiali prendendo le liste dai database json
 col1_1, col1_2, col1_3, col1_4 = st.columns(4)
 # CLS
-with open("reinforced_concrete/concrete_database.json") as file:
-    avaiable_cls_code_name = list(json.load(file))
+avaiable_cls_code_name = list(json.loads((path / "concrete_database.json").read_text()))
 with col1_1:
     cls_code_name = st.selectbox(
             label = "Normativa CLS", 
@@ -32,8 +33,7 @@ with col1_1:
             index= 0,
             key = "avaiable_cls_code_name"            
     ) 
-with open("reinforced_concrete/concrete_database.json") as file:
-    avaiable_cls_concrete_type = list(json.load(file)[cls_code_name])
+avaiable_cls_concrete_type = list(json.loads((path / "concrete_database.json").read_text())[cls_code_name])
 with col1_2:
     concrete_type = st.selectbox(
             label = "Tipologia CLS", 
@@ -42,8 +42,8 @@ with col1_2:
             key = "avaiable_concrete_type"            
     ) 
 # STEEL
-with open("reinforced_concrete/steel_database.json") as file:
-    avaiable_steel_code_name = list(json.load(file))
+
+avaiable_steel_code_name = list(json.loads((path / "steel_database.json").read_text()))
 with col1_3:
     steel_code_name = st.selectbox(
             label = "Normativa Acciaio", 
@@ -51,8 +51,10 @@ with col1_3:
             index= 0,
             key = "avaiable_steel_code_name"            
     ) 
-with open("reinforced_concrete/steel_database.json") as file:
-    avaiable_steel_type = list(json.load(file)[steel_code_name])
+
+
+
+avaiable_steel_type = list(json.loads((path / "steel_database.json").read_text())[steel_code_name])
 with col1_4:
     steel_type = st.selectbox(
             label = "Tipologia Acciaio", 

@@ -1,10 +1,11 @@
 import streamlit as st
 import json
 import pandas as pd
+from pathlib import Path
+path = Path(__file__).resolve().parent.parent / "reinforced_concrete"
 
 # CLS
-with open("reinforced_concrete/concrete_database.json") as file:
-    df_cls = pd.DataFrame(json.load(file))
+df_cls = pd.DataFrame(json.loads((path / "concrete_database.json").read_text()))
 
 avaiable_cls_code_name = list(df_cls)
 cls_code_name = st.selectbox(

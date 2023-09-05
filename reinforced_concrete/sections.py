@@ -82,7 +82,7 @@ class SteelMaterial:
     fyk: float
     Es: float
     esu: float
-    # fff:float = field(default=self.fyk/1.5)
+    # fff:float = field(default_factory=self.fyk/1.5)
 
     def __post_init__(self):
         self.fyd = self.fyk / GAMMA_S
@@ -105,7 +105,7 @@ def create_steel_material(code_name: str, steel_type: str) -> SteelMaterial:
 class Bars:
     n_bars: int
     diameter: int
-    steel_material: SteelMaterial = create_steel_material("NTC18", "B450C")
+    steel_material: SteelMaterial = field(default_factory=create_steel_material("NTC18", "B450C"))
 
     def __post_init__(self):
         self.area = self.n_bars * 3.1415 * self.diameter ** 2 / 4
@@ -121,7 +121,7 @@ class Stirrups:
     diameter: int
     spacing: int
     alpha: int = 90
-    steel_material: SteelMaterial = create_steel_material("NTC18", "B450C")
+    steel_material: SteelMaterial = field(default_factory=create_steel_material("NTC18", "B450C"))
 
     def __post_init__(self):
         self.area = self.n_braces * 3.1415 * self.diameter ** 2 / 4

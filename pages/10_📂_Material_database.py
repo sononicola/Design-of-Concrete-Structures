@@ -41,3 +41,9 @@ df_steel_code_name = pd.DataFrame(
     [df_steel[steel_code_name][steel_type] for steel_type in avaiable_steel_type]
 )
 st.dataframe(df_steel_code_name)
+
+
+#TODO questo nuovo dataframe sará quello che poi va nel resto dell'app.
+#TODO da capire cosa succede se si cancella una riga. Viene poi ri-aggiunta al prossima riavvio?
+test = st.data_editor(df_steel_code_name, hide_index=True, num_rows="dynamic", use_container_width=True)
+st.dataframe(test, hide_index= True, use_container_width=True)

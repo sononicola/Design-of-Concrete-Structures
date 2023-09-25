@@ -22,7 +22,7 @@ def rect_b_constrain(
     Ned: float,
     d2: float,
 ) -> dict:
-    "rectangular section with b and beta fixed, and with only M applied. As and d have to be found "
+    "rectangular section with b and beta fixed, and with only M applied. As and d have to be found"
     xi_23 = cls.ecu2 / (cls.ecu2 + steel.esu)
     psi = 17 / 21
     lamb = 99 / 238  # lambda
@@ -68,7 +68,7 @@ def rect_d_constrain(
     Ned: float,
     d2: float,
 ) -> dict:
-    "rectangular section with d and beta fixed, and with only M applied. As and b have to be found "
+    "rectangular section with d and beta fixed, and with only M applied. As and b have to be found"
     xi_23 = cls.ecu2 / (cls.ecu2 + steel.esu)
     psi = 17 / 21
     lamb = 99 / 238  # lambda
@@ -113,9 +113,9 @@ def T_inverted_M(
     Med: float,
     Ned: float,
 ) -> dict:
-    """T inverted section b and d fixed, and with only M applied. 
+    """T inverted section b and d fixed, and with only M applied.
     b is the lower base.
-    As and xi have to be found """
+    As and xi have to be found"""
 
     psi = 17 / 21
     lamb = 99 / 238  # lambda
@@ -155,15 +155,15 @@ def T_straight_M(
     Med: float,
     Ned: float,
 ) -> dict:
-    """T section b and d fixed, and with only M applied. 
+    """T section b and d fixed, and with only M applied.
     b is the upper base.
-    As and xi have to be found """
+    As and xi have to be found"""
 
     As, xi = sp.symbols("As, xi")
 
     ec2 = cls.ec2
     esu = steel.esu
-    psi = xi / (1 - xi) * esu / (3 * ec2 ** 2) * (3 * ec2 - xi / (1 - xi) * esu)
+    psi = xi / (1 - xi) * esu / (3 * ec2**2) * (3 * ec2 - xi / (1 - xi) * esu)
     lamb = (4 * ec2 - esu * xi / (1 - xi)) / (4 * (3 * ec2 - esu * xi / (1 - xi)))
 
     eq_m23 = eq_m_prog(
@@ -198,10 +198,37 @@ def T_straight_M(
     return {"xi": float(sol_2A_prog[xi]), "As": float(sol_2A_prog[As])}
 
 
-def possible_areas(minimum_area: float, diams: list = [12, 14, 16, 18, 20, 22]) -> str:
-    string = []
+def possible_areas_n_diam(
+    minimum_area: float, diams: list = [12, 14, 16, 18, 20, 22]
+) -> list[tuple[int, int]]:
+    "Return a list of tuples with the minimum number of bars for each diameter inserted"
+    n_diam = []
     for diam in diams:
-        n = 1 + int(minimum_area / (3.14 * diam ** 2 / 4))
-        string.append(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2  \n")
+        n = 1 + int(minimum_area / (3.14 * diam**2 / 4))
+        n_diam.append((n, diam))
+    return n_diam
 
+def possible_areas(minimum_area: float, diams: list = [12, 14, 16, 18, 20, 22]) -> str:
+    "Return a string with all the minimum number of bars for each diameter inserted"
+    string = []
+    for n,diam in possible_areas_n_diam(minimum_area, diams):
+        string.append(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2  \n")
+    return "".join(string)
+
+
+def minimum_section_base(
+    n_bars: int, diam_long_bars: int, diam_stirrups: int, c_min: int, interferro: int
+) -> float:
+    return (
+        2 * c_min
+        + 2 * diam_stirrups
+        + n_bars * diam_long_bars
+        + interferro * (n_bars - 1)
+    )
+
+def possible_areas_minimum_section_base(minimum_area: float, diam_stirrups: int, c_min: int, interferro: int, diams: list = [12, 14, 16, 18, 20, 22]):
+    string = []
+    for n,diam in possible_areas_n_diam(minimum_area, diams):
+        b_min = minimum_section_base(n, diam, diam_stirrups, c_min, interferro)
+        string.append(f"{n:>2}Ø{diam} = {n * 3.14 * diam**2 / 4:.2f} mm2  ⟶  b_min = {b_min:.0f} mm \n")
     return "".join(string)

@@ -111,7 +111,7 @@ if section_geometry == "Rettangolare":
     if design_constrain == "Base fissata":
         with col3_1 :
             beta = st.number_input(
-            label = "beta = As/As1",
+            label = "beta = As1/As",
             min_value = 0.,
             max_value=.99, #TODO
             step = .1,
@@ -155,7 +155,7 @@ if section_geometry == "Rettangolare":
     elif design_constrain == "Altezza utile fissata":
         with col3_1 :
             beta = st.number_input(
-                label = "beta = As/As1",
+                label = "beta = As1/As",
                 min_value = 0.,
                 max_value=.99, #TODO
                 step = .1,
@@ -260,20 +260,46 @@ st.write("---")
 st.subheader("Soluzione:")
 st.write(sol) 
 
-        
 st.subheader("Possibili scelte:")
+col4_1, col4_2 , col4_3 = st.columns(3) 
+with col4_1:
+    c_min = st.number_input(
+                label = "Copriferro c_min [mm]",
+                min_value = 1.,
+                step = 1.,
+                value=35.,
+                format = "%.0f",
+                key = "c_min",
+                )
+with col4_2:
+    diam_stirrups = st.number_input(
+                label = "Diametro staffe [mm]",
+                min_value = 1.,
+                step = 1.,
+                value=10.,
+                format = "%.0f",
+                key = "diam_stirrups",
+                )
+with col4_3:
+    interferro = st.number_input(
+                label = "Interferro [mm]",
+                min_value = 1.,
+                step = 1.,
+                value=25.,
+                format = "%.0f",
+                key = "interferro",
+                )
+st.latex("b_{min} = 2 \cdot c_{min} + 2\cdot Ø_{stirrups} + n_{bars}\cdot Ø_{bars} + i\cdot (n_{bars} - 1)")
 col5_1, col5_2 = st.columns(2)
 with col5_1:
     st.markdown("$A_s$")
-    st.text(design.possible_areas(minimum_area=sol["As"]))
+    st.text(design.possible_areas_minimum_section_base(minimum_area=sol["As"], diam_stirrups=diam_stirrups, c_min=c_min, interferro=interferro))
 with col5_2:
     if section_geometry == "Rettangolare":
-        st.markdown("$A^\prime_s$")
-        st.text(design.possible_areas(minimum_area=sol["As1"]))
+        st.latex("A^\prime_s")
+        st.text(design.possible_areas_minimum_section_base(minimum_area=sol["As1"], diam_stirrups=diam_stirrups, c_min=c_min, interferro=interferro))
     else:
         st.write("")
-
-
 
 
 

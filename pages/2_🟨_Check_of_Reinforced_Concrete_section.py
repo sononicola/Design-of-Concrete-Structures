@@ -15,6 +15,7 @@ from reinforced_concrete.shear import (
     shear_only_cls_layer,
     shear_with_specific_armor_layer,
 )
+from reinforced_concrete.design import minimum_section_base
 
 from dataclasses import asdict
 import pandas as pd
@@ -79,6 +80,21 @@ with col1_4:
         index=0,
         key="avaiable_steel_type",
     )
+cls = create_concrete_material(cls_code_name, concrete_type)
+steel = create_steel_material(steel_code_name, steel_type)
+# Bottone per cambiare il modulo elastico dell'acciaio
+change_Es = st.checkbox(
+    f"Vuoi cambiare il modulo elastico? Attualmente vale {steel.Es/1000} Gpa"
+)
+if change_Es:
+    steel.Es = 1000 * st.number_input(
+        label="Nuovo valore di Es [Gpa]",
+        step=1.0,
+        value=210.0,
+        format="%.1f",
+        key="Es",
+    )
+st.divider()
 
 # Selezione caratteristiche calcestruzzo
 col2_1, col2_2, col2_3, col2_4 = st.columns(4)
@@ -194,7 +210,7 @@ with col3_3:
         )
     )
 
-
+st.divider()
 # Selezione sollecitazioni
 col4_1, col4_2 = st.columns(2)
 with col4_1:
@@ -214,20 +230,32 @@ with col4_2:
         key="Ned",
     )
 
-cls = create_concrete_material(cls_code_name, concrete_type)
-steel = create_steel_material(steel_code_name, steel_type)
-# Bottone per cambiare il modulo elastico dell'acciaio
-change_Es = st.checkbox(
-    f"Vuoi cambiare il modulo elastico? Attualmente vale {steel.Es/1000} Gpa"
-)
-if change_Es:
-    steel.Es = 1000 * st.number_input(
-        label="Nuovo valore di Es [Gpa]",
-        step=1.0,
-        value=210.0,
-        format="%.1f",
-        key="Es",
-    )
+# Baee minima
+st.divider()
+col5_1, col5_2 = st.columns(2) 
+with col5_1:
+    c_min = st.number_input(
+                label = "Copriferro c_min [mm]",
+                min_value = 1.,
+                step = 1.,
+                value=35.,
+                format = "%.0f",
+                key = "c_min",
+                )
+with col5_2:
+    interferro = st.number_input(
+                label = "Interferro [mm]",
+                min_value = 1.,
+                step = 1.,
+                value=25.,
+                format = "%.0f",
+                key = "interferro",
+                )
+b_min = minimum_section_base(n_bars_bottom, diam_bottom, diam_stirrups, c_min, interferro)
+st.markdown("$b_{min} = 2 \cdot c_{min} + 2\cdot Ø_{stirrups} + n_{bars}\cdot Ø_{bars} + i\cdot (n_{bars} - 1) = $"+ f"{b_min:.0f} mm < b = {b:.0f} mm | {b_min < b}")
+st.divider()
+
+
 
 As = Bars(n_bars=n_bars_bottom, diameter=diam_bottom, steel_material=steel)
 As1 = Bars(n_bars=n_bars_up, diameter=diam_up, steel_material=steel)
@@ -251,8 +279,8 @@ section = ReinforcedConcreteSection(
     stirrups=stirrups,
 )
 
-st.write("Repr of objects:")
-st.code(repr(section))
+st.sidebar.write("Repr of objects:")
+st.sidebar.code(repr(section))
 
 # -- RUNNING PROGRAM --
 results_ULS, logs_ULS = computeVero(section=section)
@@ -261,7 +289,11 @@ results_ULS_shear_no_armor = shear_only_cls_layer(section=section)
 results_ULS_shear_with_armor = shear_with_specific_armor_layer(
     section=section, alpha_c=1
 )
-
+st.sidebar.divider()
+st.sidebar.metric("b_min", f"{round(b_min)} mm")
+st.sidebar.metric("Mrd", f"{round(results_ULS.get('Mrd')/1000000,2)} kNm")
+st.sidebar.metric("Vrd no armor", f"{round(results_ULS_shear_no_armor.get('Vrd')/1000,2)} kN")
+st.sidebar.metric("Vrd with armor", f"{round(results_ULS_shear_with_armor.get('Vr_d')/1000,2)} kN")
 col5_1, col5_2 = st.columns(2)
 with col5_1:
     st.subheader("Input:")

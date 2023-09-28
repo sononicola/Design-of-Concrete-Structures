@@ -171,13 +171,13 @@ class ReinforcedConcreteSection:
 
     @property
     def rho_long_h(self):
-        "Ac/As_tot, where Ac is b*h of CLS section and As_tot is As+As1 of longitudinal bars. See also self.rho_long_d"
-        return self.Ac_h / (self.As.area + self.As1.area)
+        "As_tot/Ac, where Ac is b*h of CLS section and As_tot is As+As1 of longitudinal bars. See also self.rho_long_d"
+        return (self.As.area + self.As1.area) / self.Ac_h
 
     @property
     def rho_long_d(self):
-        "Ac/As_tot, where Ac is b*d of CLS section and As_tot is As+As1 of longitudinal bars. See also self.rho_long_h"
-        return self.Ac_d / (self.As.area + self.As1.area)
+        "As_tot/Ac, where Ac is b*d of CLS section and As_tot is As+As1 of longitudinal bars. See also self.rho_long_h"
+        return (self.As.area + self.As1.area) / self.Ac_d 
 
     def neutral_axis_1_M(self, n=15):
         return (

@@ -106,13 +106,13 @@ def create_steel_material(code_name: str, steel_type: str) -> SteelMaterial:
 class Bars:
     n_bars: int
     diameter: int
-    steel_material: SteelMaterial = field(default_factory=create_steel_material("NTC18", "B450C"))
+    steel_material: SteelMaterial = field(default_factory = lambda : create_steel_material("NTC18", "B450C"))
 
     def __post_init__(self):
         self.area = self.n_bars * 3.1415 * self.diameter ** 2 / 4
 
     def __str__(self):
-        "Return a string like:'2Ø4' "
+        "Return a string like:'2Ø14' "
         return f"{self.n_bars}Ø{self.diameter}"
 
 
@@ -122,7 +122,7 @@ class Stirrups:
     diameter: int
     spacing: int
     alpha: int = 90
-    steel_material: SteelMaterial = field(default_factory=create_steel_material("NTC18", "B450C"))
+    steel_material: SteelMaterial = field(default_factory = lambda : create_steel_material("NTC18", "B450C"))
 
     def __post_init__(self):
         self.area = self.n_braces * 3.1415 * self.diameter ** 2 / 4
@@ -134,12 +134,13 @@ class Stirrups:
 
 @dataclass()
 class InternalForces:
-    M: float = 0.0
+    "Nmm and N"
+    M: float = 0.0  
     N: float = 0.0
     V: float = 0.0
 
 
-@dataclass()
+@dataclass(kw_only=True)
 class ReinforcedConcreteSection:
     b: int
     d: float
@@ -148,8 +149,8 @@ class ReinforcedConcreteSection:
     concrete_material: ConcreteMaterial
     As: Bars
     As1: Bars
-    internal_forces: InternalForces
-    stirrups: Stirrups = None
+    internal_forces: InternalForces = field(default_factory=lambda : InternalForces(0,0,0))
+    stirrups: Stirrups = field(default_factory=lambda : Stirrups(n_braces=0, diameter=0, spacing=1000, alpha=90))
     name: str = "no name assigned"
 
     def __post_init__(self):

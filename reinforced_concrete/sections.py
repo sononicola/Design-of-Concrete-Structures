@@ -6,6 +6,7 @@ GAMMA_C = 1.5
 ALPHA_CC = 0.85
 GAMMA_S = 1.15
 from pathlib import Path
+from copy import deepcopy
 
 path = Path(__file__).resolve().parent
 
@@ -153,6 +154,29 @@ class ReinforcedConcreteSection:
 
     def __post_init__(self):
         self.h = self.d + self.d1
+
+    
+    def create_inverted_section(self, new_internal_forces:InternalForces = None, new_name:str = ""):
+        """
+        Return a ReinforcedConcreteSection object which is a deep copy of the original_section. 
+        
+        This new section has lontitudinal bars areas inverted ->  As = As1 and As1 = As and also d1 with d2.
+
+        You should also pass a new system of internal forces (InternalForces)
+        """
+        inverted_section = deepcopy(self)
+
+        inverted_section.As, inverted_section.As1 = inverted_section.As1, inverted_section.As #inverte le armature
+        inverted_section.d1, inverted_section.d2 = inverted_section.d2, inverted_section.d1 # e d1 con d2
+        if new_internal_forces is not None:
+            inverted_section.internal_forces = new_internal_forces
+
+        if new_name == "":
+            inverted_section.name = self.name + "_inverted"
+        else: 
+            inverted_section.name = new_name
+
+        return inverted_section
 
     @property
     def Ac_h(self):

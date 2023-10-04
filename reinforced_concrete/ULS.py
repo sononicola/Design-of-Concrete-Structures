@@ -1,6 +1,10 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from reinforced_concrete.sections import ReinforcedConcreteSection
 import sympy as sp
 from typing import List, Tuple
-from reinforced_concrete.sections import ReinforcedConcreteSection
+
 
 def eq_m_prog(b, sigma_c, sigma_s1, xi, d, psi ,lamb, As1, d2):
     return b * psi * xi*d * sigma_c * (d - lamb*xi*d)  + sigma_s1*As1* (d - d2) 
@@ -290,32 +294,10 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
         logs += f"\nOltre campo 3 {xi_3 = :.5f} > di {xi_34 = :.5f}" 
     #print(locals())
     return results, logs
+def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict, str]:
+    return compute_from_section #TODO solo per legacy temporaneo
 
-
-
-def layer_object_to_values(section:ReinforcedConcreteSection): #TODO
-    b = section.b
-    As = section.As.area
-    As1 = section.As1.area
-    d = section.d
-    d1 = section.d1
-    d2 = section.d2
-
-    fck = section.concrete_material.fck
-    Ec = section.concrete_material.Ecm
-    ec2 = section.concrete_material.ec2
-    ecu = section.concrete_material.ecu2
-
-    fyk = section.As.steel_material.fyk
-    Es = section.As.steel_material.Es
-    ese = section.As.steel_material.ese
-    esu = section.As.steel_material.esu
-
-    fyk1 = section.As1.steel_material.fyk
-    ese1 = section.As1.steel_material.ese
-    esu1 = section.As1.steel_material.esu
-
-def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
+def compute_from_section(section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
     "Layer: object -> compute function"
     return compute(
             Med=section.internal_forces.M,

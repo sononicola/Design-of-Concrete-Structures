@@ -292,7 +292,7 @@ with col4_3:
 st.latex("b_{min} = 2 \cdot c_{min} + 2\cdot Ø_{stirrups} + n_{bars}\cdot Ø_{bars} + i\cdot (n_{bars} - 1)")
 col5_1, col5_2 = st.columns(2)
 with col5_1:
-    st.markdown("$A_s$")
+    st.latex("A_s")
     st.text(design.possible_areas_minimum_section_base(minimum_area=sol["As"], diam_stirrups=diam_stirrups, c_min=c_min, interferro=interferro))
 with col5_2:
     if section_geometry == "Rettangolare":

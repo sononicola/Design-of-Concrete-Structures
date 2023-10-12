@@ -2,11 +2,13 @@ import json
 from dataclasses import dataclass, field
 from math import sqrt
 
+import matplotlib.pyplot as plt
 GAMMA_C = 1.5
 ALPHA_CC = 0.85
 GAMMA_S = 1.15
 from pathlib import Path
 from copy import deepcopy
+from reinforced_concrete.MN_interaction_diagram import MN_InteractionDiagram
 
 path = Path(__file__).resolve().parent
 
@@ -311,4 +313,14 @@ Section name: {self.name}
             "Ned": self.internal_forces.N,
             "Ved": self.internal_forces.V,
         }
+    
+    def plot_interaction_diagram(
+        self,    
+        MN: bool = True,
+        points: list[tuple[float, float, str]] | None = None,
+    ) -> None:
+        "points: None or a list of tuples like: (M[kNm], N[kN], str) or (mu[-]], nu[-], str)"
+        diag = MN_InteractionDiagram([self])
+        fig, ax = plt.subplots(1,1, figsize=(12,8))
+        diag.plot(ax=ax, MN=MN, points=points)
 

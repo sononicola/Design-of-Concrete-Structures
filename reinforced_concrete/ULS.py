@@ -294,10 +294,10 @@ def compute(Med, Ned, b, d, d1, d2, As, As1, fcd, fyd, fyd1, \
         logs += f"\nOltre campo 3 {xi_3 = :.5f} > di {xi_34 = :.5f}" 
     #print(locals())
     return results, logs
-def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict, str]:
-    return compute_from_section #TODO solo per legacy temporaneo
+def computeVero(section:ReinforcedConcreteSection) -> Tuple[dict[str, float], str]:
+    return  compute_from_section(section) #TODO solo per legacy temporaneo
 
-def compute_from_section(section:ReinforcedConcreteSection) -> Tuple[dict, str]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
+def compute_from_section(section:ReinforcedConcreteSection) -> Tuple[dict[str, float], str]: #TODO CAMBIARE I NOMI DELLE FUNZIONI
     "Layer: object -> compute function"
     return compute(
             Med=section.internal_forces.M,
@@ -321,7 +321,7 @@ def compute_from_section(section:ReinforcedConcreteSection) -> Tuple[dict, str]:
             esu1=section.As1.steel_material.esu,
             # TODO METTERE TUTTI
         )
-
+    
 def Nrd_pils(section: ReinforcedConcreteSection) -> float: #TODO inserirla dentro a compue, usando un if sul MEd==0
     "Calc Nrd with the formula 0.8*Ac*fcd + As*fyd"
     return 0.8*section.Ac_h*section.concrete_material.fcd + section.As.area*section.As.steel_material.fyd + section.As1.area*section.As1.steel_material.fyd
